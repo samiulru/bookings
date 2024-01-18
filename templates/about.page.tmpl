@@ -1,0 +1,26 @@
+{{template "base" .}}
+
+{{define "title"}}
+    <title>About</title>
+{{end}}
+
+{{define "content"}}
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <p style="font-family: 'Arial',sans-serif; font-weight: bold">This is about page.</p>
+                <p>
+                    Author: <b>{{index .StringMap "author"}}</b>
+                    <br>
+                    {{if ne (index .StringMap "remote_ip") ""}}
+                        Your remote IP is <b>{{index .StringMap "remote_ip"}}</b>
+                        <br>Visit <a href="/" target="_blank"> Home Page</a>
+                    {{else}}
+                        We don't know you remote IP. Please Visit <a href="/" target="_blank">Home Page</a>
+                    {{end}}
+                </p>
+
+            </div>
+        </div>
+    </div>
+{{end}}
