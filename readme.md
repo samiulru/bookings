@@ -1,5 +1,6 @@
 # Bookings and Reservations
 [Visit Our Website](https://samiulru.github.io/bookings/)
+
 This is the repository for my booking and reservations project
 
 - Uses Go versions 1.21.5
