@@ -1,0 +1,41 @@
+img{
+    width: 800px;
+    height: 600px;
+  }
+.page-footer{
+  color: white;
+  text-align: center;
+  background-color: #121618;
+  font-size: 80%;
+  height: 5em;
+  margin-top: 1em;
+  padding: 1em;
+}
+.make_reservation_input{
+  padding: 3px;
+  border: 1px solid rgb(33, 37, 37);
+  border-radius: 2px;
+}
+.custom-swal-size {
+  max-height: 200px !important;
+  min-height: 200px !important;
+  max-width: 500px !important;
+  min-width: 400px !important;  
+}
+.custom-popup-form {
+  display: inline;
+  width:200px;
+  height: 30px;
+  border: 1px solid #218838 ;
+}
+.datepicker {
+  z-index: 10000;
+}
+.swal2-confirm{
+  color:#218838;
+  background-color: green;
+} 
+.swal2-styled{
+  background-color: green;
+
+}
