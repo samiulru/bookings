@@ -27,29 +27,31 @@ func NewHandler(r *Repository) {
 	Repo = r
 }
 
-// Home page handlers
+// Home handles the home page
 func (m *Repository) Home(w http.ResponseWriter, r *http.Request) {
-	stringMap := make(map[string]string)
-	remoteIP := r.RemoteAddr
-	stringMap["author"] = "Samiul Bashir"
-	stringMap["contact_email"] = "coding.samiul@gmail.com"
-	stringMap["github"] = "https://github.com/samiulru"
-	stringMap["remote_ip"] = remoteIP
-
-	m.App.Session.Put(r.Context(), "author", stringMap["author"])
-	m.App.Session.Put(r.Context(), "remote_ip", remoteIP)
-	render.TemplatesRenderer(w, "home.page.tmpl", &models.TemplateData{
-		StringMap: stringMap,
-	})
+	render.TemplatesRenderer(w, "home.page.tmpl", &models.TemplateData{})
 }
-
-// About page handlers
+// About handles the about page
 func (m *Repository) About(w http.ResponseWriter, r *http.Request) {
-	stringMap := make(map[string]string)
-	stringMap["remote_ip"] = m.App.Session.GetString(r.Context(), "remote_ip")
-	stringMap["author"] = m.App.Session.GetString(r.Context(), "author")
-	render.TemplatesRenderer(w, "about.page.tmpl", &models.TemplateData{
-		StringMap: stringMap,
-	})
-
+	render.TemplatesRenderer(w, "about.page.tmpl", &models.TemplateData{})
+}
+// Home handles the about page
+func (m *Repository) Economical(w http.ResponseWriter, r *http.Request) {
+	render.TemplatesRenderer(w, "economical.page.tmpl", &models.TemplateData{})
+}
+// Premium handles the room page
+func (m *Repository) Premium(w http.ResponseWriter, r *http.Request) {
+	render.TemplatesRenderer(w, "premium.page.tmpl", &models.TemplateData{})
+}
+// SearchAvailability handles search availability page 
+func (m *Repository) SearchAvailability(w http.ResponseWriter, r *http.Request) {
+	render.TemplatesRenderer(w, "search-availability.page.tmpl", &models.TemplateData{})
+}
+// Reservation handles Make-reservation page 
+func (m *Repository) Reservation(w http.ResponseWriter, r *http.Request) {
+	render.TemplatesRenderer(w, "make-reservation.page.tmpl", &models.TemplateData{})
+}
+// Contact handles contact page 
+func (m *Repository) Contact(w http.ResponseWriter, r *http.Request) {
+	render.TemplatesRenderer(w, "contact.page.tmpl", &models.TemplateData{})
 }

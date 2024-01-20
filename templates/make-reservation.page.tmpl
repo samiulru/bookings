@@ -1,0 +1,39 @@
+{{template "base" .}}
+
+{{define "title"}}
+    <title>Reservation</title>
+{{end}}
+
+{{define "content"}}
+<div class="container">
+    <div class="row">
+        <div class="col"></div>
+        <div class="col">
+            <form action="/make_reservation.page.tmpl" method="post" >
+                <div class="form-group mt-4">
+                    <label for="first_name"><b>First Name:</b></label><br>
+                    <input type="text" name="first_name" id="first_name" class="make_reservation_input" required>
+                </div>
+                <div class="form-group">
+                    <label for="last_name"><b>Last Name:</b></label><br>
+                    <input type="text" name="last_name" id="last_name" class="make_reservation_input" required>
+                </div>
+                <div class="form-group">
+                    <label for="email"><b>Email:</b></label><br>
+                    <input type="email" name="email" id="email" class="make_reservation_input" required>
+                </div>
+                <div class="form-group">
+                    <label for="mobile_number"><b>Mobile:</b></label><br>
+                    <input type="text" name="mobile_number" id="mobile_number" class="make_reservation_input" required>
+                </div>
+                <div class="form-group">
+                        <label for="all_checked"><input type="checkbox" class="mr-5px" id="all_checked" name="all_checked" required> I confirm that all the information provided in this form is accurate</label>
+                </div>
+                <input type="submit" class="btn btn-success" value="Submit">
+            </form>
+        </div>
+        <div class="col"></div>
+    </div>
+</div>
+
+{{end}}

@@ -7,20 +7,25 @@
 {{define "content"}}
     <div class="container">
         <div class="row">
-            <div class="col">
-                <p style="font-family: 'Arial',sans-serif; font-weight: bold">This is about page.</p>
-                <p>
-                    Author: <b>{{index .StringMap "author"}}</b>
-                    <br>
-                    {{if ne (index .StringMap "remote_ip") ""}}
-                        Your remote IP is <b>{{index .StringMap "remote_ip"}}</b>
-                        <br>Visit <a href="/" target="_blank"> Home Page</a>
-                    {{else}}
-                        We don't know you remote IP. Please Visit <a href="/" target="_blank">Home Page</a>
-                    {{end}}
-                </p>
+          <h3 class="text-center">About Travel Tryst Bed and Breakfast</h3>
+          <p>Welcome to Travel Tryst Travel Tryst Bed and Breakfast, where hospitality meets excellence. Founded with a passion for creating memorable experiences, we are dedicated to providing a haven of comfort and luxury for our guests. Nestled in [Location], our hotel is more than just a place to stay; it's a gateway to a world of sophistication and warm hospitality.
+          </p>
 
-            </div>
+          <h3>Our Story</h3>
+          <p>
+            Travel Tryst Travel Tryst Bed and Breakfast began its journey with a vision to redefine hospitality. Established in 2023, our founders envisioned a space where every guest feels not just welcomed but cherished. Over the years, we have grown into a cherished destination for travelers seeking a blend of modern luxury and personalized service.
+          </p>
+
+          <h3>Our Commitment</h3>
+          <p>At Travel Tryst Travel Tryst Bed and Breakfast, we are committed to exceeding your expectations. Our team of dedicated professionals is passionate about curating an environment where every detail is meticulously crafted to ensure your stay is nothing short of extraordinary. From the moment you step through our doors, you become a part of our story, and your satisfaction is our top priority.
+          </p>
+          <h3>Our Values</h3>
+          <p>
+            Integrity, excellence, and a genuine commitment to guest satisfaction are the pillars on which Travel Tryst Travel Tryst Bed and Breakfast stands. We believe in creating not just a hotel but a community of happy guests who return for the unparalleled experiences we offer.
+          </p>
+          <h3>Come, Be Our Guest</h3>
+          <p>Whether you are here for business, leisure, or a special occasion, Travel Tryst Travel Tryst Bed and Breakfast invites you to experience the epitome of hospitality. Discover a world where comfort and elegance converge seamlessly, and each stay is a chapter in a story of unmatched luxury.
+          </p>
         </div>
     </div>
 {{end}}
