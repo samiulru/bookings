@@ -1,14 +1,4 @@
 
-        let attention = Prompt();
-        let el = document.getElementById('submitBtn').addEventListener("click", function() {
-                    let html = `
-                <form id="reservation-date-modal" action="" method="get" novalidate>
-                  <h4>Select Dates</h4>            
-                  <input type="text" class="custom-popup-form" name="arrival" id="arrival" placeholder="Arrival" autocomplete="off" disabled required>
-                  <input type="text" class="custom-popup-form" name="deperture" id="deperture" placeholder="Deperture" autocomplete="off" disabled required>
-                </form>`
-            attention.reservation({msg: html})
-        })
 
         function Prompt(){
           async function reservation(c){
@@ -22,18 +12,18 @@
               focusConfirm: false,
               showCancelButton: true,
               customClass:"custom-swal-size",
-              position: "bottom",
+              // position: "bottom",
               confirmButtonColor: "#28a745",
               cancelButtonColor: "#020202",
-              okButtonColor: "#28a745",
               willOpen: () => {
                 const data_el = document.getElementById('reservation-date-modal');
                 const rp = new DateRangePicker(data_el, {
-                    format: 'dd-mm-yyyy',
+                    format: "dd-mm-yyyy",
                     showOnFocus: true,
                     clearButton: true,
                     autohide: true,
-                    orientation:'top',
+                    orientation:"top",
+                    allowOneSidedRange:"ture",
                   });
               },
               didOpen: () => {
@@ -58,13 +48,17 @@
                   showCancelButton: true,
                   cancelButtonColor: "#020202",
                   
-                });
-              } else {
-                Swal.fire({
-                title: "Your Selected Date",
-                text: "From " + arrival_date + " To " + deperture_date,
-                confirmButtonColor: "#28a745",
-              });
+                });                
+              } else if(formValues.dismiss !== Swal.DismissReason.cancel){
+                if(formValues.value !== ""){
+                  if(c.callback !== undefined){
+                    c.callback(formValues);
+                  }
+                }else{
+                  c.callback(false);
+                }
+              }else{
+                c.callback(false);
               }
             }
           }

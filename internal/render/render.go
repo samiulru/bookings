@@ -3,12 +3,14 @@ package render
 import (
 	"bytes"
 	"fmt"
-	"github.com/samiulru/bookings/pkg/config"
-	"github.com/samiulru/bookings/pkg/models"
 	"html/template"
 	"log"
 	"net/http"
 	"path/filepath"
+
+	"github.com/justinas/nosurf"
+	"github.com/samiulru/bookings/internal/config"
+	"github.com/samiulru/bookings/internal/models"
 )
 
 var funcMap = template.FuncMap{}
@@ -20,12 +22,13 @@ func NewTemplates(a *config.AppConfig) {
 }
 
 // AddDefaultData sets the template data for each handler
-func AddDefaultData(data *models.TemplateData) *models.TemplateData {
+func AddDefaultData(data *models.TemplateData, r *http.Request) *models.TemplateData {
+	data.CSRFToken = nosurf.Token(r)
 	return data
 }
 
 // TemplatesRenderer renders templates specified by the templateName with the help of html/template package
-func TemplatesRenderer(w http.ResponseWriter, templateName string, data *models.TemplateData) {
+func TemplatesRenderer(w http.ResponseWriter, r *http.Request, templateName string, data *models.TemplateData) {
 	////checksErr checks if there is any error and stops the app immediately after printing the error logs
 	var err error
 	checksErr := func(msg string) {
@@ -45,8 +48,8 @@ func TemplatesRenderer(w http.ResponseWriter, templateName string, data *models.
 	}
 
 	buf := new(bytes.Buffer)
-
-	err = tmpl.Execute(buf, AddDefaultData(data))
+	td := AddDefaultData(data, r)
+	err = tmpl.Execute(buf, td)
 	checksErr("Error occur while executing template")
 
 	_, err = buf.WriteTo(w)

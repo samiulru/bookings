@@ -36,4 +36,27 @@
     <script src="https://cdn.jsdelivr.net/npm/vanillajs-datepicker@1.3.4/dist/js/datepicker-full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="/static/js/popup-date-selector.js"></script>
+    <script>
+
+        let attention = Prompt();
+        let el = document.getElementById('submitBtn').addEventListener("click", function() {
+                    let html = `
+                <form id="reservation-date-modal" action="" method="get" novalidate>
+                  <h4>Select Dates</h4>            
+                  <input type="text" class="custom-popup-form" name="arrival" id="arrival" placeholder="Arrival" autocomplete="off" disabled required>
+                  <input type="text" class="custom-popup-form" name="deperture" id="deperture" placeholder="Deperture" autocomplete="off" disabled required>
+                </form>`
+            attention.reservation({
+              msg: html,
+              callback: function(formValues){
+                console.log("Called");
+                fetch("/search-availability-json")
+                  .then(response => response.json())
+                  .then(data => {
+                    console.log(data)
+                  })
+              }
+            })
+        })
+    </script>
 {{end}}
