@@ -1,15 +1,18 @@
 package main
 
 import (
+	"encoding/gob"
 	"fmt"
-	"github.com/alexedwards/scs/v2"
-	"github.com/samiulru/bookings/internal/config"
-	"github.com/samiulru/bookings/internal/handlers"
-	"github.com/samiulru/bookings/internal/render"
-	"github.com/samiulru/bookings/internal/test"
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/alexedwards/scs/v2"
+	"github.com/samiulru/bookings/internal/config"
+	"github.com/samiulru/bookings/internal/handlers"
+	"github.com/samiulru/bookings/internal/models"
+	"github.com/samiulru/bookings/internal/render"
+	"github.com/samiulru/bookings/internal/test"
 )
 
 // specified port that is listen to serve web request
@@ -20,6 +23,8 @@ var session *scs.SessionManager
 
 // The webapp entry point
 func main() {
+	//What I am going to put in the session
+	gob.Register(models.Reservation{})
 	//Creating template cache
 	tmplCache, err := render.CreateTemplateCache()
 	if err != nil {

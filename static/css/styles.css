@@ -2,6 +2,12 @@ img{
     width: 800px;
     height: 600px;
   }
+  #dashed-2{
+    border: none;
+    height: 2px;
+    background: #000;
+    background: repeating-linear-gradient(90deg,#000,#000 6px,transparent 6px,transparent 12px);
+  }
 .page-footer{
   color: white;
   text-align: center;
@@ -10,6 +16,11 @@ img{
   height: 6em;
   margin-top: 1em;
   padding: 1em;
+}
+.form-field-size{
+  max-width: 60%;
+  min-width: 50%;
+  margin-left:30%;
 }
 .make_reservation_input{
   padding: 3px;

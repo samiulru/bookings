@@ -1,0 +1,54 @@
+{{template "base" .}}
+
+{{define "titel"}}
+    <title>Summary</title>
+{{end}}
+
+{{define "content"}}
+    <div class="container bg-dark text-white">
+        <div class="row mt-4">
+            <div class="col"></div>
+            <div class="col"><h2>Reservation Summary</h2></div>
+            <div class="col"></div>
+        </div>
+        <div class="row mt-4">
+            <div class="col">
+                {{$res := index .Data "reservation"}}
+                <table class="table table-striped text-white">
+                    <thead>Traveller Information:</thead>
+                    <tbody>
+                        <tr>
+                            <td>Name:</td>
+                            <td>{{ printf "%s " $res.FirstName }}{{$res.LastName }}</td>
+                        </tr>
+                        <tr>
+                            <td>Email:</td>
+                            <td>{{$res.Email}}</td>
+                        </tr>
+                        <tr>
+                            <td>Mobile:</td>
+                            <td>{{$res.MobileNumber}}</td>
+                        </tr>                       
+                    </tbody>
+                </table>
+            </div>
+            <div class="col">
+                <table class="table table-striped text-white">
+                    <thead>Booking Information:</thead>
+                    <tbody>
+                        <tr>
+                            <td>Chcek-in:</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>Check-out:</td>
+                            <td></td>
+                        </tr>                   
+                    </tbody>
+                </table>
+            </div>
+            
+        </div>
+    </div>
+
+{{end}}
