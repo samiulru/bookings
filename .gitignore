@@ -185,7 +185,7 @@ publish/
 *.[Pp]ublish.xml
 *.azurePubxml
 # Note: Comment the next line if you want to checkin your web deploy settings,
-# but database connection strings (with potential passwords) will be unencrypted
+# but driver connection strings (with potential passwords) will be unencrypted
 *.pubxml
 *.publishproj
 
@@ -366,7 +366,7 @@ ASALocalRun/
 # Visual Studio History (VSHistory) files
 .vshistory/
 
-# BeatPulse healthcheck temp database
+# BeatPulse healthcheck temp driver
 healthchecksdb
 
 # Backup folder for Package Reference Convert tool in Visual Studio 2017

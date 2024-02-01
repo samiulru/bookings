@@ -15,7 +15,7 @@
             <div class="col">
                 {{$res := index .Data "reservation"}}
                 <table class="table table-striped text-white">
-                    <thead>Traveller Information:</thead>
+                    <thead>Tourist Information:</thead>
                     <tbody>
                         <tr>
                             <td>Name:</td>
@@ -37,12 +37,12 @@
                     <thead>Booking Information:</thead>
                     <tbody>
                         <tr>
-                            <td>Chcek-in:</td>
-                            <td></td>
+                            <td>Check-in:</td>
+                            <td><td>{{$res.StartDate}}</td></td>
                         </tr>
                         <tr>
                             <td>Check-out:</td>
-                            <td></td>
+                            <td><td>{{$res.EndDate}}</td></td>
                         </tr>                   
                     </tbody>
                 </table>

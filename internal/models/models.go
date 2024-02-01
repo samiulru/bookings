@@ -1,9 +1,62 @@
 package models
 
-type Reservation struct{
-	FirstName string
-	LastName string
-	Email string
+import "time"
+
+// User defines the user model
+type User struct {
+	ID          int
+	FirstName   string
+	LastName    string
+	Email       string
+	Password    string
+	AccessLevel int
+	CreatedAt   time.Time
+	UpdateAt    time.Time
+}
+
+// Room defines the room model
+type Room struct {
+	ID        int
+	RoomName  string
+	CreatedAt time.Time
+	UpdateAt  time.Time
+}
+
+// Restriction defines the restriction model
+type Restriction struct {
+	ID              int
+	RestrictionName string
+	CreatedAt       time.Time
+	UpdateAt        time.Time
+}
+
+// Reservation defines the reservations model
+type Reservation struct {
+	ID           int
+	FirstName    string
+	LastName     string
+	Email        string
+	Password     string
 	MobileNumber string
-	Checkbox string
+	StartDate    time.Time
+	EndDate      time.Time
+	RoomID       int
+	Room         Room
+	CreatedAt    time.Time
+	UpdateAt     time.Time
+}
+
+// RoomRestriction defines the restriction model
+type RoomRestriction struct {
+	ID            int
+	StartDate     time.Time
+	EndDate       time.Time
+	RoomID        int
+	ReservationID int
+	RestrictionId int
+	CreatedAt     time.Time
+	UpdateAt      time.Time
+	Room          Room
+	Reservation   Reservation
+	Restriction   Restriction
 }

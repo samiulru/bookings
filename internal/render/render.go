@@ -2,9 +2,9 @@ package render
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"html/template"
-	"log"
 	"net/http"
 	"path/filepath"
 
@@ -13,21 +13,10 @@ import (
 	"github.com/samiulru/bookings/internal/models"
 )
 
-var funcMap = template.FuncMap{
-	"PadLeft":  PadLeft,
-	"PadRight": PadRight,
-}
-// PadLeft pads the input string with spaces on the left to reach the specified width.
-func PadLeft(s string, width int) string {
-	return fmt.Sprintf("%-*s", width, s)
-}
-
-// PadRight pads the input string with spaces on the right to reach the specified width.
-func PadRight(s string, width int) string {
-	return fmt.Sprintf("%*s", width, s)
-}
+var funcMap = template.FuncMap{}
 
 var app *config.AppConfig
+var pathToTemplates = "./templates"
 
 // NewTemplates sets the config for template package
 func NewTemplates(a *config.AppConfig) {
@@ -44,57 +33,69 @@ func AddDefaultData(data *models.TemplateData, r *http.Request) *models.Template
 }
 
 // TemplatesRenderer renders templates specified by the templateName with the help of html/template package
-func TemplatesRenderer(w http.ResponseWriter, r *http.Request, templateName string, data *models.TemplateData) {
-	////checksErr checks if there is any error and stops the app immediately after printing the error logs
+func TemplatesRenderer(w http.ResponseWriter, r *http.Request, templateName string, data *models.TemplateData) error {
+	var tmplCache map[string]*template.Template
 	var err error
-	checksErr := func(msg string) {
-		if err != nil {
-			log.Fatal(msg)
-		}
-	}
-	//getting template cache from AppConfig
-	tmplCache := app.TemplateCache
-	if !app.UseCache {
+
+	if app.UseCache {
+		//getting template cache from AppConfig
+		tmplCache = app.TemplateCache
+	} else {
+		//This is for testing, so this will rebuild the template cache on every request
 		tmplCache, err = CreateTemplateCache()
-		checksErr("Error occur while creating new template cache")
+		if err != nil {
+			return err
+		}
+
 	}
 	tmpl, ok := tmplCache[templateName]
 	if !ok {
-		log.Fatal("Could not get the template from the template cache")
+		return errors.New("cannot get the template from the template cache")
 	}
 
 	buf := new(bytes.Buffer)
 	td := AddDefaultData(data, r)
 	err = tmpl.Execute(buf, td)
-	checksErr("Error occur while executing template")
+	if err != nil {
+		fmt.Println("error while executing templates")
+		return err
+	}
 
 	_, err = buf.WriteTo(w)
-	checksErr("Error occur while writing to the response writer")
+	if err != nil {
+		fmt.Println("error while writing template to the browser")
+		return err
+	}
+
+	return nil
+
 }
 
 // CreateTemplateCache creates templates cache
 func CreateTemplateCache() (map[string]*template.Template, error) {
 	tmplCache := map[string]*template.Template{}
 
-	//printErr checks and print these errors, if there is any error 
-	printErr := func(err error) {
-		if err != nil {
-			fmt.Println("Error occur within the CreateTemplateCache function:", err)
-		}
+	pages, err := filepath.Glob(fmt.Sprintf("%s/*.page.tmpl", pathToTemplates))
+	if err != nil {
+		return tmplCache, errors.New(fmt.Sprint("Error occur within the CreateTemplateCache function:", err))
 	}
-	pages, err := filepath.Glob("./templates/*.page.tmpl")
-	printErr(err)
 
 	for _, pg := range pages {
 		name := filepath.Base(pg)
 		ts, err := template.New(name).Funcs(funcMap).ParseFiles(pg)
-		printErr(err)
+		if err != nil {
+			return tmplCache, errors.New(fmt.Sprint("Error occur within the CreateTemplateCache function:", err))
+		}
 
-		matches, err := filepath.Glob("./templates/*.layout.tmpl")
-		printErr(err)
+		matches, err := filepath.Glob(fmt.Sprintf("%s/*.layout.tmpl", pathToTemplates))
+		if err != nil {
+			return tmplCache, errors.New(fmt.Sprint("Error occur within the CreateTemplateCache function:", err))
+		}
 		if len(matches) > 0 {
-			ts, err = ts.ParseGlob("./templates/*.layout.tmpl")
-			printErr(err)
+			ts, err = ts.ParseGlob(fmt.Sprintf("%s/*.layout.tmpl", pathToTemplates))
+			if err != nil {
+				return tmplCache, errors.New(fmt.Sprint("Error occur within the CreateTemplateCache function:", err))
+			}
 		}
 
 		tmplCache[name] = ts
@@ -102,4 +103,3 @@ func CreateTemplateCache() (map[string]*template.Template, error) {
 
 	return tmplCache, nil
 }
-

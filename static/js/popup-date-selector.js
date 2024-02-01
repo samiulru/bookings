@@ -27,21 +27,21 @@
                   });
               },
               didOpen: () => {
-                document.getElementById('arrival').removeAttribute('disabled')
-                document.getElementById('deperture').removeAttribute('disabled')
+                document.getElementById('start_date').removeAttribute('disabled')
+                document.getElementById('end_date').removeAttribute('disabled')
                 document.getElementById('reservation-date-modal').style.overflow = "visible"
               },
               preConfirm: () => {
                 return [
-                  document.getElementById("arrival").value,
-                  document.getElementById("deperture").value
+                  document.getElementById("start_date").value,
+                  document.getElementById("end_date").value
                 ];
               },
             });
             if (formValues) {
-              const arrival_date = document.getElementById("arrival").value;
-              const deperture_date = document.getElementById("deperture").value; 
-              if(arrival_date == "" || deperture_date == ""){
+              const start_date = document.getElementById("start_date").value;
+              const ende_date = document.getElementById("end_date").value;
+              if(start_date === "" || ende_date === ""){
                 Swal.fire({
                   html: `<b style="color:black;">Invalid Date</b>`,
                   showConfirmButton: false,
