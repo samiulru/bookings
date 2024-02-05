@@ -54,6 +54,7 @@
                 let myform = document.getElementById("Check-availability-form");
                 let formData = new FormData(myform);
                 formData.append("csrf_token", "{{.CSRFToken}}");
+                formData.append("room_id", "2");
                 console.log(formData);
                 fetch('/search-availability-json',{
                         method: "post",
@@ -62,9 +63,27 @@
                 )
                   .then(response => response.json())
                   .then(data => {
-                    console.log(data)
-                    console.log(data.ok)
-                    console.log(data.message)
+                    if (data.ok){
+                      Swal.fire({
+                        icon: "success",
+                        html:'<b>Room Available</b><br><a href="/book-now?id='
+                        + data.room_id
+                        + '&s='
+                        + data.start_date
+                        + '&e='
+                        + data.end_date
+                        +'" class="btn btn-success mt-2">Book Now</a>',
+                        showConfirmButton: false,
+                        showCancelButton: false,
+                      });
+                    } 
+                    else{
+                      Swal.fire({
+                        icon: "error",
+                        html: `<b>Opps...<br>No Room Available</b>`,
+                        confirmButtonColor: "rgb(0,150,0)",
+                      });
+                    }
                   })
               }
             })

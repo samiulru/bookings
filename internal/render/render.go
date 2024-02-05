@@ -4,13 +4,12 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"html/template"
-	"net/http"
-	"path/filepath"
-
 	"github.com/justinas/nosurf"
 	"github.com/samiulru/bookings/internal/config"
 	"github.com/samiulru/bookings/internal/models"
+	"html/template"
+	"net/http"
+	"path/filepath"
 )
 
 var funcMap = template.FuncMap{}

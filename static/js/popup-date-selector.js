@@ -1,5 +1,3 @@
-
-
         function Prompt(){
           async function reservation(c){
             const {
@@ -12,13 +10,13 @@
               focusConfirm: false,
               showCancelButton: true,
               customClass:"custom-swal-size",
-              // position: "bottom",
-              confirmButtonColor: "#28a745",
-              cancelButtonColor: "#020202",
+              confirmButtonColor: "rgb(0,150,0)",
+              cancelButtonColor: "rgb(50,50,50)",
               willOpen: () => {
                 const data_el = document.getElementById('reservation-date-modal');
                 const rp = new DateRangePicker(data_el, {
                     format: "dd-mm-yyyy",
+                    minDate: new Date(),
                     showOnFocus: true,
                     clearButton: true,
                     autohide: true,
@@ -41,14 +39,14 @@
             if (formValues) {
               const start_date = document.getElementById("start_date").value;
               const ende_date = document.getElementById("end_date").value;
-              if(start_date === "" || ende_date === ""){
+              if(start_date === "" || end_date === ""){
                 Swal.fire({
                   html: `<b style="color:black;">Invalid Date</b>`,
                   showConfirmButton: false,
                   showCancelButton: true,
-                  cancelButtonColor: "#020202",
-                  
-                });                
+                  cancelButtonColor: "rgb(50,50,50)",
+
+                });
               } else if(formValues.dismiss !== Swal.DismissReason.cancel){
                 if(formValues.value !== ""){
                   if(c.callback !== undefined){

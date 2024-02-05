@@ -10,20 +10,20 @@
 
 {{define "content"}}
 <div class="container">
+    {{$res := index .Data "reservation"}}
     <div class="row">
         <div class="col"></div>
         <div class="col"><h2>Traveller's Information</h2></div>
         <div class="col"></div>
     </div>
-    <div class="row" style="color: #ebebeb; background-color: rgb(20, 165, 45); height: 40px;">
+    <div class="row text-center" style="color: #76d4c5; background-color: rgb(19, 36, 22); height: 40px; padding-top: 5px;">
         {{$str := .StringMap}}
-        <div class="col"><h4>Check-in: {{$str.start_date}}</h4></div>
-        <div class="col"><h4>Check-out: {{$str.end_date}}</h4></div>
-        <div class="col"><h4>Room Name: {{$str.room_name}}</h4></div>
+        <div class="col"><h5>Check-in: {{$str.start_date}}</h5></div>
+        <div class="col"><h5>Check-out: {{$str.end_date}}</h5></div>
+        <div class="col"><h5>Room Name: {{$str.room_name}}</h5></div>
     </div>
     <div class="row mt-4">
         <div class="col">
-            {{$res := index .Data "reservation"}}
             <form action="/make-reservation" method="post" novalidate>
                 <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
                 <input type="hidden" name="room_id" id="room_id" value="{{$res.RoomID}}">
