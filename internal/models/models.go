@@ -36,7 +36,6 @@ type Reservation struct {
 	FirstName    string
 	LastName     string
 	Email        string
-	Password     string
 	MobileNumber string
 	StartDate    time.Time
 	EndDate      time.Time

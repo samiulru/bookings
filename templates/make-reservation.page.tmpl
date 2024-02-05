@@ -15,17 +15,18 @@
         <div class="col"><h2>Traveller's Information</h2></div>
         <div class="col"></div>
     </div>
-    <div class="row">
-        <div class="col"></div>
-        <div class="col" id="dashed-1"></div>
-        <div class="col"></div>
+    <div class="row" style="color: #ebebeb; background-color: rgb(20, 165, 45); height: 40px;">
+        {{$str := .StringMap}}
+        <div class="col"><h4>Check-in: {{$str.start_date}}</h4></div>
+        <div class="col"><h4>Check-out: {{$str.end_date}}</h4></div>
+        <div class="col"><h4>Room Name: {{$str.room_name}}</h4></div>
     </div>
-    <div class="row">
-        <div class="col"></div>
+    <div class="row mt-4">
         <div class="col">
             {{$res := index .Data "reservation"}}
             <form action="/make-reservation" method="post" novalidate>
                 <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+                <input type="hidden" name="room_id" id="room_id" value="{{$res.RoomID}}">
                 <div class="form-group">
                     <label for="first_name"><b>First Name:</b></label>
                     {{with .Form.Err.Get "first_name"}}
@@ -58,35 +59,12 @@
                     <br>
                     <input type="text" name="mobile_number" id="mobile_number" class="make_reservation_input {{with .Form.Err.Get "mobile_number"}} is-invalid {{end}}" value="{{$res.MobileNumber}}" required>
                 </div>
-
-
-                <div id="reservation-date">
-                    <div class="form-group">
-                        <label for="start_date"><b>Check-in Date:</b></label>
-                        {{with .Form.Err.Get "start_date"}}
-                            <label class="text-danger">{{.}}</label>
-                        {{end}}
-                        <br>
-                        <input type="text" name="start_date" id="start_date" class="make_reservation_input" autocomplete="off" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="end_date"><b>Check-out Date:</b></label>
-                        {{with .Form.Err.Get "end_date"}}
-                            <label class="text-danger">{{.}}</label>
-                        {{end}}
-                        <br>
-                        <input type="text" name="end_date" id="end_date" class="make_reservation_input" autocomplete="off" required>
-                    </div>
-                    <div><input type="hidden" name="room_id" id="room_id" value="1"></div>
-                </div>
-
                 <div class="row">
                     <div class="col ml-5"><input type="submit" class="btn btn-success text-center" value="Submit"></div>
 
                 </div>
             </form>
         </div>
-        <div class="col"></div>
     </div>
 </div>
 

@@ -46,6 +46,7 @@ func main() {
 func run() (*driver.DB, error) {
 	//What I am going to put in the session
 	gob.Register(models.Reservation{})
+	gob.Register([]models.Room{})
 	gob.Register(models.User{})
 	//Creating template cache
 	tmplCache, err := render.CreateTemplateCache()
