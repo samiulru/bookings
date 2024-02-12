@@ -15,6 +15,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"testing"
 	"time"
 )
 
@@ -23,7 +24,7 @@ var pathToTemplates = "./../../templates"
 var app config.AppConfig
 var session *scs.SessionManager
 
-func getRoutes() http.Handler {
+func TestMain(m *testing.M) {
 	//What I am going to put in the session
 	gob.Register(models.Reservation{})
 	//Creating template cache
@@ -47,10 +48,14 @@ func getRoutes() http.Handler {
 	errorLog := log.New(os.Stdout, "ERROR:\t", log.Ldate|log.Ltime|log.Lshortfile)
 	app.ErrorLog = errorLog
 
-	repo := NewRepo(&app)
+	repo := NewTestRepo(&app)
 	NewHandler(repo)
 	render.NewTemplates(&app)
 
+	os.Exit(m.Run())
+}
+
+func getRoutes() http.Handler {
 	mux := chi.NewRouter()
 
 	mux.Use(middleware.Recoverer)
@@ -66,6 +71,9 @@ func getRoutes() http.Handler {
 	mux.Get("/search-availability", Repo.SearchAvailability)
 	mux.Post("/search-availability", Repo.PostSearchAvailability)
 	mux.Post("/search-availability-json", Repo.SearchAvailabilityJSON)
+
+	mux.Get("/choose-room/{id}", Repo.ChooseRoom)
+	mux.Get("/book-now", Repo.BookNow)
 
 	mux.Get("/make-reservation", Repo.Reservation)
 	mux.Post("/make-reservation", Repo.PostReservation)
