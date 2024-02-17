@@ -21,6 +21,9 @@ func routes(app *config.AppConfig) http.Handler {
 	mux.Get("/economical", handlers.Repo.Economical)
 	mux.Get("/premium", handlers.Repo.Premium)
 	mux.Get("/contact", handlers.Repo.Contact)
+	mux.Get("/user/login", handlers.Repo.UserLogin)
+	mux.Post("/user/login", handlers.Repo.PostUserLogin)
+	mux.Get("/user/logout", handlers.Repo.UserLogout)
 
 	mux.Get("/search-availability", handlers.Repo.SearchAvailability)
 	mux.Post("/search-availability", handlers.Repo.PostSearchAvailability)
@@ -36,5 +39,13 @@ func routes(app *config.AppConfig) http.Handler {
 	//FileServer for serving files
 	fileServer := http.FileServer(http.Dir("./static/"))
 	mux.Handle("/static/*", http.StripPrefix("/static", fileServer))
+
+	//secure routes that available only for specific user
+	mux.Route("/admin", func(mux chi.Router) {
+		mux.Use(Auth)
+
+		mux.Get("/dashboard", handlers.Repo.UserDashboard)
+
+	})
 	return mux
 }

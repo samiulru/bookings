@@ -32,6 +32,10 @@ func main() {
 		log.Fatal(err)
 	}
 	defer db.SQL.Close()
+	//
+	//defer close(app.MailChan)
+	//fmt.Println("Mail Server is running on port: 1025")
+	//listenForMail()
 
 	//Http server for our web app
 	srv := &http.Server{
@@ -47,6 +51,14 @@ func run() (*driver.DB, error) {
 	//What I am going to put in the session
 	gob.Register(models.Reservation{})
 	gob.Register(models.User{})
+	gob.Register(models.Room{})
+	gob.Register(models.Restriction{})
+	gob.Register(models.RoomRestriction{})
+
+	//mailChan carries all the mail from any part of the app
+	//mailChan := make(chan models.MailData)
+	//app.MailChan = mailChan
+
 	//Creating template cache
 	tmplCache, err := render.CreateTemplateCache()
 	if err != nil {

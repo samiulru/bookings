@@ -2,7 +2,9 @@ package dbrepo
 
 import (
 	"context"
+	"errors"
 	"github.com/samiulru/bookings/internal/models"
+	"golang.org/x/crypto/bcrypt"
 	"time"
 )
 
@@ -124,7 +126,80 @@ func (m *postgresDBRepo) SearchAvailabilityForAllRooms(start, end time.Time) ([]
 	return rooms, nil
 }
 
-// GetRoomByID searchs room by id
+// GetUserByID searches user by ID
+func (m *postgresDBRepo) GetUserByID(id int) (models.User, error) {
+	cntx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	var u models.User
+	query := `select id, first_name, last_name, email, password, access_level, created_at, updated_at
+		from users where id = $1`
+
+	row := m.DB.QueryRowContext(cntx, query, id)
+	err := row.Scan(
+		&u.ID,
+		&u.FirstName,
+		&u.LastName,
+		&u.Email,
+		&u.Password,
+		&u.AccessLevel,
+		&u.CreatedAt,
+		&u.UpdateAt,
+	)
+
+	if err != nil {
+		return u, err
+	}
+	return u, nil
+}
+
+// UpdateUser updates a user in the database
+func (m *postgresDBRepo) UpdateUser(u models.User) error {
+	cntx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	query := `update users
+			set first_name = $1 , last_name = $2 , email = $3 , password = $4 , access_level = $5, updated_at = $6
+			where id = $7`
+
+	_, err := m.DB.ExecContext(cntx, query,
+		u.FirstName,
+		u.LastName,
+		u.Email,
+		u.Password,
+		u.AccessLevel,
+		time.Now(),
+		u.ID,
+	)
+
+	return err
+}
+
+// Authenticate authenticates a user
+func (m *postgresDBRepo) Authenticate(email, testPassword string) (int, string, error) {
+	cntx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	var id int
+	var hashedPassword string
+
+	row := m.DB.QueryRowContext(cntx, "select id, password from users where email = $1", email)
+
+	err := row.Scan(&id, &hashedPassword)
+
+	if err != nil {
+		return id, "", err
+	}
+	err = bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(testPassword))
+
+	if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
+		return 0, "", errors.New("incorrect password")
+	} else if err != nil {
+		return 0, "", err
+	}
+
+	return id, hashedPassword, nil
+}
+
+// GetRoomByID searches room by ID
 func (m *postgresDBRepo) GetRoomByID(id int) (models.Room, error) {
 	cntx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()

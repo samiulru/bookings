@@ -1,0 +1,36 @@
+{{template "base" .}}
+
+{{define "css"}}
+       <link rel="stylesheet" href="/static/css/login-form-styles.css">
+{{end}}
+
+{{define "title"}}
+    <title>Login</title>
+{{end}}
+
+{{define "content"}}
+    <div class="login-wrap">
+            <h2 class="login-h2">Login</h2>
+            <div class="form">
+                <form action="/user/login" method="POST" novalidate>
+                    <input type="hidden" id="csrf_token" name="csrf_token" value={{.CSRFToken}} >
+                    <div>
+                        {{with .Form.Err.Get "email"}}
+                            <label class="errMsg">{{.}}</label>
+                        {{end}}
+                        <br>
+                        <input class="form-input" type="email" placeholder="Email" id="email" name="email" required />
+                    </div>
+                    <div>
+                        {{with .Form.Err.Get "password"}}
+                            <label class="errMsg">{{.}}</label>
+                        {{end}}
+                        <br>
+                        <input class="form-input" type="password" placeholder="Password" id="password" name="password" required />
+                    </div>
+                    <button type="submit" class="form-button"> Sign in </button>
+                    <a class="form-links" href="https://google.com"> <p> Don't have an account? Register </p></a>
+                </form>
+            </div>
+          </div>
+{{end}}

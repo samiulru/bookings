@@ -1,0 +1,93 @@
+{{template "base" .}}
+
+{{define "title"}}
+    <title>Dashboard</title>
+{{end}}
+
+{{define "css"}}
+    <style>
+     .container-main {
+          display: grid;
+          grid-template-rows: auto 1fr auto; /* Header, Content, Footer */
+          grid-template-columns: 200px 1fr; /* Sidebar, Main Content */
+          min-height: 100vh;
+        }
+
+        .header {
+          background-color: #333;
+          color: #fff;
+          padding: 20px;
+          text-align: center;
+          grid-column: span 2; /* Span across both columns */
+        }
+
+        .sidebar {
+          background-color: #5476ab; /* Blue */
+          color: #fff;
+          padding: 20px;
+        }
+
+        .sidebar h2 {
+          margin-top: 0;
+        }
+
+        .sidebar ul {
+          list-style-type: none;
+          padding: 0;
+          margin: 0;
+        }
+
+        .sidebar ul li {
+          margin-bottom: 10px;
+        }
+
+        .sidebar ul li a {
+          color: #fff;
+          text-decoration: none;
+          transition: color 0.3s ease;
+        }
+
+        .sidebar ul li a:hover {
+          color: #ffd700; /* Change to yellow on hover */
+        }
+
+        .main-content {
+          padding: 20px;
+        }
+
+        .footer {
+          background-color: #333;
+          color: #fff;
+          padding: 20px;
+          text-align: center;
+          grid-column: span 2; /* Span across both columns */
+        }
+    </style>
+{{end}}
+
+{{define "content"}}
+<div class="container-main">
+  <div class="header">
+    <h1>Dashboard</h1>
+  </div>
+
+  <div class="sidebar">
+    <h2>Sidebar</h2>
+    <ul>
+      <li><a href="#">Item 1</a></li>
+      <li><a href="#">Item 2</a></li>
+      <li><a href="#">Item 3</a></li>
+      <li><a href="#">Item 4</a></li>
+    </ul>
+  </div>
+
+  <div class="main-content">
+    <h2>Main Content</h2>
+    <p>Welcome to your colorful dashboard!</p>
+  </div>
+
+  <div class="footer">
+    <p>&copy; 2024 Dashboard. All rights reserved.</p>
+  </div>
+</div>
+{{end}}

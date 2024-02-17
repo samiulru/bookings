@@ -9,6 +9,7 @@ import (
 	"github.com/samiulru/bookings/internal/render"
 	"github.com/samiulru/bookings/internal/repository"
 	"github.com/samiulru/bookings/internal/repository/dbrepo"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -70,9 +71,65 @@ func (m *Repository) Contact(w http.ResponseWriter, r *http.Request) {
 	_ = render.TemplatesRenderer(w, r, "contact.page.tmpl", &models.TemplateData{})
 }
 
+// UserLogin handles UserLogin page
+func (m *Repository) UserLogin(w http.ResponseWriter, r *http.Request) {
+	_ = render.TemplatesRenderer(w, r, "login.page.tmpl", &models.TemplateData{
+		Form: forms.New(nil),
+	})
+}
+
+// PostUserLogin handles authentication and Login of users
+func (m *Repository) PostUserLogin(w http.ResponseWriter, r *http.Request) {
+	_ = m.App.Session.RenewToken(r.Context())
+
+	err := r.ParseForm()
+	if err != nil {
+		log.Println(err)
+	}
+
+	email := r.Form.Get("email")
+	password := r.Form.Get("password")
+	form := forms.New(r.PostForm)
+	form.Required("email", "password")
+	form.IsEmail("email")
+
+	if !form.Valid() {
+		log.Println(err)
+		err = render.TemplatesRenderer(w, r, "login.page.tmpl", &models.TemplateData{
+			Form: form,
+		})
+		http.Error(w, "", http.StatusSeeOther)
+		return
+	}
+
+	id, _, err := m.DB.Authenticate(email, password)
+	if err != nil {
+		log.Println(err)
+		m.App.Session.Put(r.Context(), "error", "invalid login credentials")
+		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+		return
+	}
+	m.App.Session.Put(r.Context(), "user_id", id)
+	m.App.Session.Put(r.Context(), "flash", "You are logged in successfully")
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
 // SearchAvailability handles search availability page for GET request
 func (m *Repository) SearchAvailability(w http.ResponseWriter, r *http.Request) {
 	_ = render.TemplatesRenderer(w, r, "search-availability.page.tmpl", &models.TemplateData{})
+}
+
+// UserLogout logs a user out
+func (m *Repository) UserLogout(w http.ResponseWriter, r *http.Request) {
+	_ = m.App.Session.Destroy(r.Context())
+	_ = m.App.Session.RenewToken(r.Context())
+	http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+
+}
+
+// UserDashboard handles users dashboard
+func (m *Repository) UserDashboard(w http.ResponseWriter, r *http.Request) {
+	render.TemplatesRenderer(w, r, "user-dashboard.page.tmpl", &models.TemplateData{})
 }
 
 // PostSearchAvailability handles search availability page for POST request
@@ -81,20 +138,20 @@ func (m *Repository) PostSearchAvailability(w http.ResponseWriter, r *http.Reque
 	end := r.FormValue("end_date")
 
 	layout := "02-01-2006"
-	start_date, err := time.Parse(layout, start)
+	startDate, err := time.Parse(layout, start)
 	if err != nil {
 		m.App.Session.Put(r.Context(), "error", "Invalid start date format")
 		http.Redirect(w, r, "/search-availability", http.StatusSeeOther)
 		return
 	}
-	end_date, err := time.Parse(layout, end)
+	endDate, err := time.Parse(layout, end)
 	if err != nil {
 		m.App.Session.Put(r.Context(), "error", "Invalid end date format")
 		http.Redirect(w, r, "/search-availability", http.StatusSeeOther)
 		return
 	}
 
-	rooms, err := m.DB.SearchAvailabilityForAllRooms(start_date, end_date)
+	rooms, err := m.DB.SearchAvailabilityForAllRooms(startDate, endDate)
 	if err != nil {
 		m.App.Session.Put(r.Context(), "error", "Database Error while searching for all rooms! Try Again")
 		http.Redirect(w, r, "/search-availability", http.StatusSeeOther)
@@ -110,8 +167,8 @@ func (m *Repository) PostSearchAvailability(w http.ResponseWriter, r *http.Reque
 	data["rooms"] = rooms
 
 	res := models.Reservation{
-		StartDate: start_date,
-		EndDate:   end_date,
+		StartDate: startDate,
+		EndDate:   endDate,
 	}
 	m.App.Session.Put(r.Context(), "reservation", res)
 
@@ -299,12 +356,13 @@ func (m *Repository) PostReservation(w http.ResponseWriter, r *http.Request) {
 		strMap["start_date"] = res.StartDate.Format("02-01-2006")
 		strMap["end_date"] = res.EndDate.Format("02-01-2006")
 		strMap["room_name"] = res.Room.RoomName
-		http.Error(w, "invalid form", http.StatusSeeOther)
+
 		err = render.TemplatesRenderer(w, r, "make-reservation.page.tmpl", &models.TemplateData{
 			Form:      form,
 			Data:      data,
 			StringMap: strMap,
 		})
+		http.Error(w, "", http.StatusSeeOther)
 		return
 	}
 
@@ -327,6 +385,29 @@ func (m *Repository) PostReservation(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 		return
 	}
+
+	//Send confirmation notification to the client
+	//
+	//mailData := models.MailData{
+	//	From:     "samiulprogramming@gmal.com",
+	//	To:       res.Email,
+	//	Subject:  "Reservation Confirmation",
+	//	Content:  "clientMailContent.html",
+	//	Template: "basic.html",
+	//}
+	//m.App.MailChan <- mailData
+
+	//Send confirmation notification to the Owner
+	//
+	//mailData = models.MailData{
+	//	From:     "samiulprogramming@gmal.com",
+	//	To:       "samiul@gmail.com",
+	//	Subject:  "Reservation Confirmation",
+	//	Content:  "ownerMailContent.html",
+	//	Template: "basic.html",
+	//}
+	//m.App.MailChan <- mailData
+
 	m.App.Session.Put(r.Context(), "reservation", res) //Put user input to the session manager
 
 	http.Redirect(w, r, "/reservation-summary", http.StatusSeeOther) //redirecting to the path
