@@ -1,0 +1,98 @@
+{{template "admin" .}}
+
+{{define "page-title"}}
+    Reservation Details
+{{end}}
+
+{{define "content"}}
+    <div class="container">
+        {{$res := index .Data "reservation"}}
+        {{$src := index .StringMap "src"}}
+        <div class="row">
+            <div class="navbar navbar-dark bg-dark text-center text-white align-items-center border rounded" >
+                <div class="col">Reservation ID: {{$res.ID}}</div>
+                <div class="col">Check-in: {{dateOnly $res.StartDate}}</div>
+                <div class="col">Check-out: {{dateOnly $res.EndDate}}</div>
+                <div class="col">Room Name: {{$res.Room.RoomName}}</div>
+            </div>
+        </div>
+        <div class="row mt-4">
+            <form action="/admin/reservations/{{$src}}/{{$res.ID}}" method="post" novalidate>
+                <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+                <div class="form-group">
+                    <label for="first_name"><b>First Name:</b></label>
+                    {{with .Form.Err.Get "first_name"}}
+                        <label class="text-danger">{{.}}</label>
+                    {{end}}
+                    <br>
+                    <input type="text" name="first_name" id="first_name" class="make_reservation_input {{with .Form.Err.Get "first_name"}} is-invalid {{end}}" value="{{$res.FirstName}}" required>
+                </div>
+                <div class="form-group">
+                    <label for="last_name"><b>Last Name:</b></label>
+                    {{with .Form.Err.Get "last_name"}}
+                        <label class="text-danger">{{.}}</label>
+                    {{end}}
+                    <br>
+                    <input type="text" name="last_name" id="last_name" class="make_reservation_input {{with .Form.Err.Get "last_name"}} is-invalid {{end}}" value="{{$res.LastName}}" required>
+                </div>
+                <div class="form-group">
+                    <label for="email"><b>Email:</b></label>
+                    {{with .Form.Err.Get "email"}}
+                        <label class="text-danger">{{.}}</label>
+                    {{end}}
+                    <br>
+                    <input type="email" name="email" id="email" class="make_reservation_input {{with .Form.Err.Get "email"}} is-invalid {{end}}" value="{{$res.Email}}" required>
+                </div>
+                <div class="form-group">
+                    <label for="mobile_number"><b>Mobile:</b></label>
+                    {{with .Form.Err.Get "mobile_number"}}
+                        <label class="text-danger">{{.}}</label>
+                    {{end}}
+                    <br>
+                    <input type="text" name="mobile_number" id="mobile_number" class="make_reservation_input {{with .Form.Err.Get "mobile_number"}} is-invalid {{end}}" value="{{$res.MobileNumber}}" required>
+                </div>
+                <div class="float-left">
+                    <input type="submit" class="btn btn-success rounded" value="Save">
+                    <a href="/admin/{{$src}}-reservations" class="btn btn-warning rounded">Cancel</a>
+                    <a href="#!" class="btn btn-info rounded" onclick='processReservation({{$res.ID}})'>Mark as Processed</a>
+                </div>
+                <div class="float-right">
+                    <a href="#!" class="btn btn-danger rounded" onclick='deleteReservation({{$res.ID}})'>Delete</a>
+                </div>
+                <div class="clearfix"></div>
+            </form>
+        </div>
+    </div>
+{{end}}
+
+{{define "js"}}
+    {{$src:= index .StringMap "src"}}
+    <script src="/static/js/form-validation.js"></script>
+    <script>
+        let attention = Prompt();
+        function processReservation(id) {
+            attention.custom({
+                icon: 'warning',
+                msg: 'Are you sure?',
+                callback: function(result) {
+                    if (result !== false) {
+                        window.location.href = "/admin/process-reservation/{{$src}}/" + id;
+                    }
+                }
+            })
+        }
+
+        function deleteReservation(id) {
+            attention.custom({
+                icon: 'warning',
+                msg: 'Are you sure?',
+                callback: function(result) {
+                    if (result !== false) {
+                        window.location.href = "/admin/delete-reservation/{{$src}}/" + id;
+                    }
+                }
+            })
+        }
+    </script>
+
+{{end}}

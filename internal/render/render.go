@@ -10,9 +10,12 @@ import (
 	"html/template"
 	"net/http"
 	"path/filepath"
+	"time"
 )
 
-var funcMap = template.FuncMap{}
+var funcMap = template.FuncMap{
+	"dateOnly": DateOnly,
+}
 
 var app *config.AppConfig
 var pathToTemplates = "./templates"
@@ -20,6 +23,11 @@ var pathToTemplates = "./templates"
 // NewTemplates sets the config for template package
 func NewTemplates(a *config.AppConfig) {
 	app = a
+}
+
+// DateOnly returns Date DD-MM-YYYY format
+func DateOnly(t time.Time) string {
+	return t.Format("02-Jan-2006")
 }
 
 // AddDefaultData sets the template data for each handler

@@ -8,7 +8,8 @@ This is the repository of a modern web application for booking and reservations 
 ## Tech stack used in this project
 - Uses [HTML5](https://html.spec.whatwg.org/multipage/)
 - Uses [CSS3](https://www.w3.org/Style/CSS/)
-- Uses [Bootstrap4](https://getbootstrap.com/docs/4.0/getting-started/introduction/)
+- Uses [Bootstrap 4](https://getbootstrap.com/docs/4.0/getting-started/introduction/)
+- Uses [Javascript](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
 - Uses [Go](https://go.dev/) version 1.21.5
 - Uses [Postgresql](https://www.postgresql.org/)
 
@@ -18,6 +19,9 @@ This is the repository of a modern web application for booking and reservations 
 - Uses [alex edwards SCS](http://github.com/alexedwards/scs/v2) [HTTP Session Management for Go]
 - Uses [nosurf](http://github.com/justinas/nosurf) [CSRF protection middleware for Go]
 - Uses [pgx](https://github.com/jackc/pgx) [PostgreSQL driver and toolkit for Go]
-- Uses [govalidator](https://github.com/asaskevich/govalidator) for checking validity  of forms
-- Uses [SweetAlert2](https://github.com/sweetalert2/sweetalert2)[Highly customizable JavaScript's popup boxes. Zero dependencies]
-- Uses [Notie](https://github.com/jaredreich/notie)[Notification bar suite for javascript, Zero dependencies]
+- Uses [Govalidator](https://github.com/asaskevich/govalidator) [Pure golang package for Form Validation]
+- Uses [SweetAlert2](https://github.com/sweetalert2/sweetalert2) [Highly customizable JavaScript's popup boxes. Zero dependencies]
+- Uses [Notie](https://github.com/jaredreich/notie) [Notification bar suite for javascript, Zero dependencies]
+- uses [Go Simple Mail](https://github.com/xhit/go-simple-mail) [Golang package for sending highly customizable email]
+- Uses [RoyalUI Free Bootstrap 4 Admin Template](https://github.com/BootstrapDash/RoyalUI-Free-Bootstrap-Admin-Template) [A highly responsive template built with HTML5, CSS, Bootstrap, jQuery and SASS]
+- Uses [Data Table](https://github.com/fiduswriter/simple-datatables) [Lightweight JavaScript HTML table library written in TypeScript and transpiled to Vanilla JavaScript]

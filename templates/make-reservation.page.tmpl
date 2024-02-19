@@ -16,11 +16,11 @@
         <div class="col"><h2>Traveller's Information</h2></div>
         <div class="col"></div>
     </div>
-    <div class="row text-center" style="color: #76d4c5; background-color: rgb(19, 36, 22); height: 40px; padding-top: 5px;">
+    <div class="navbar navbar-dark bg-dark text-center text-white align-items-center border rounded" >
         {{$str := .StringMap}}
-        <div class="col"><h5>Check-in: {{$str.start_date}}</h5></div>
-        <div class="col"><h5>Check-out: {{$str.end_date}}</h5></div>
-        <div class="col"><h5>Room Name: {{$str.room_name}}</h5></div>
+        <div class="col">Check-in: {{$str.start_date}}</div>
+        <div class="col">Check-out: {{$str.end_date}}</div>
+        <div class="col">Room Name: {{$str.room_name}}</div>
     </div>
     <div class="row mt-4">
         <div class="col">

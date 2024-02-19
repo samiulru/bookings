@@ -85,3 +85,38 @@ func (m *testDBRepo) Authenticate(email, testPassword string) (int, string, erro
 	var hashedPassword string
 	return id, hashedPassword, nil
 }
+
+// ViewALlReservations returns a slice of all reservations
+func (m *testDBRepo) ViewALlReservations() ([]models.Reservation, error) {
+	var reservations []models.Reservation
+	var err error
+	return reservations, err
+}
+
+// ViewNewReservations returns a slice of all reservations
+func (m *testDBRepo) ViewNewReservations() ([]models.Reservation, error) {
+	var reservations []models.Reservation
+	return reservations, nil
+}
+
+// GetReservationByID searches reservation info by ID
+func (m *testDBRepo) GetReservationByID(id int) (models.Reservation, error) {
+	var reservation models.Reservation
+	return reservation, nil
+}
+
+
+// UpdatReservation updates reservation information in the database
+func (m *testDBRepo) UpdateReservation(r models.Reservation) error {
+	return nil
+}
+
+// DeleteReservation deletes reservation information from the database
+func (m *testDBRepo) DeleteReservation(id int) error {
+	return nil
+}
+
+// UpdateProcessedForReservation updates Processed information in the database
+func (m *testDBRepo) UpdateProcessedForReservation(id, processed int) error {
+	return nil
+}

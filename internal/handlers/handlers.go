@@ -2,18 +2,21 @@ package handlers
 
 import (
 	"encoding/json"
-	"github.com/samiulru/bookings/internal/config"
-	"github.com/samiulru/bookings/internal/driver"
-	"github.com/samiulru/bookings/internal/forms"
-	"github.com/samiulru/bookings/internal/models"
-	"github.com/samiulru/bookings/internal/render"
-	"github.com/samiulru/bookings/internal/repository"
-	"github.com/samiulru/bookings/internal/repository/dbrepo"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/samiulru/bookings/internal/config"
+	"github.com/samiulru/bookings/internal/driver"
+	"github.com/samiulru/bookings/internal/forms"
+	"github.com/samiulru/bookings/internal/helpers"
+	"github.com/samiulru/bookings/internal/models"
+	"github.com/samiulru/bookings/internal/render"
+	"github.com/samiulru/bookings/internal/repository"
+	"github.com/samiulru/bookings/internal/repository/dbrepo"
 )
 
 // Repo is the Repository used by handlers
@@ -71,65 +74,9 @@ func (m *Repository) Contact(w http.ResponseWriter, r *http.Request) {
 	_ = render.TemplatesRenderer(w, r, "contact.page.tmpl", &models.TemplateData{})
 }
 
-// UserLogin handles UserLogin page
-func (m *Repository) UserLogin(w http.ResponseWriter, r *http.Request) {
-	_ = render.TemplatesRenderer(w, r, "login.page.tmpl", &models.TemplateData{
-		Form: forms.New(nil),
-	})
-}
-
-// PostUserLogin handles authentication and Login of users
-func (m *Repository) PostUserLogin(w http.ResponseWriter, r *http.Request) {
-	_ = m.App.Session.RenewToken(r.Context())
-
-	err := r.ParseForm()
-	if err != nil {
-		log.Println(err)
-	}
-
-	email := r.Form.Get("email")
-	password := r.Form.Get("password")
-	form := forms.New(r.PostForm)
-	form.Required("email", "password")
-	form.IsEmail("email")
-
-	if !form.Valid() {
-		log.Println(err)
-		err = render.TemplatesRenderer(w, r, "login.page.tmpl", &models.TemplateData{
-			Form: form,
-		})
-		http.Error(w, "", http.StatusSeeOther)
-		return
-	}
-
-	id, _, err := m.DB.Authenticate(email, password)
-	if err != nil {
-		log.Println(err)
-		m.App.Session.Put(r.Context(), "error", "invalid login credentials")
-		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
-		return
-	}
-	m.App.Session.Put(r.Context(), "user_id", id)
-	m.App.Session.Put(r.Context(), "flash", "You are logged in successfully")
-	http.Redirect(w, r, "/", http.StatusSeeOther)
-}
-
 // SearchAvailability handles search availability page for GET request
 func (m *Repository) SearchAvailability(w http.ResponseWriter, r *http.Request) {
 	_ = render.TemplatesRenderer(w, r, "search-availability.page.tmpl", &models.TemplateData{})
-}
-
-// UserLogout logs a user out
-func (m *Repository) UserLogout(w http.ResponseWriter, r *http.Request) {
-	_ = m.App.Session.Destroy(r.Context())
-	_ = m.App.Session.RenewToken(r.Context())
-	http.Redirect(w, r, "/user/login", http.StatusSeeOther)
-
-}
-
-// UserDashboard handles users dashboard
-func (m *Repository) UserDashboard(w http.ResponseWriter, r *http.Request) {
-	render.TemplatesRenderer(w, r, "user-dashboard.page.tmpl", &models.TemplateData{})
 }
 
 // PostSearchAvailability handles search availability page for POST request
@@ -236,8 +183,8 @@ func (m *Repository) SearchAvailabilityJSON(w http.ResponseWriter, r *http.Reque
 // ChooseRoom handles room selection for the users
 func (m *Repository) ChooseRoom(w http.ResponseWriter, r *http.Request) {
 	// split the URL up by /, and grab the 3rd element
-	URIParition := strings.Split(r.RequestURI, "/")
-	roomID, err := strconv.Atoi(URIParition[2])
+	URIPartition := strings.Split(r.RequestURI, "/")
+	roomID, err := strconv.Atoi(URIPartition[2])
 	if err != nil {
 		m.App.Session.Put(r.Context(), "error", "missing url parameter")
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
@@ -335,7 +282,7 @@ func (m *Repository) PostReservation(w http.ResponseWriter, r *http.Request) {
 	}
 	res, ok := m.App.Session.Get(r.Context(), "reservation").(models.Reservation)
 	if !ok {
-		m.App.Session.Put(r.Context(), "error", "can't get reservation info from the session! Please try agian")
+		m.App.Session.Put(r.Context(), "error", "can't get reservation info from the session! Please try again")
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 		return
 	}
@@ -429,4 +376,229 @@ func (m *Repository) ReservationSummary(w http.ResponseWriter, r *http.Request) 
 	_ = render.TemplatesRenderer(w, r, "reservation-summary.page.tmpl", &models.TemplateData{
 		Data: data,
 	})
+}
+
+/*......................................................................
+....................Admin Tools Handler Functions....................
+......................................................................*/
+
+// UserLogin handles UserLogin page
+func (m *Repository) UserLogin(w http.ResponseWriter, r *http.Request) {
+	_ = render.TemplatesRenderer(w, r, "login.page.tmpl", &models.TemplateData{
+		Form: forms.New(nil),
+	})
+}
+
+// PostUserLogin handles authentication and Login of users
+func (m *Repository) PostUserLogin(w http.ResponseWriter, r *http.Request) {
+	_ = m.App.Session.RenewToken(r.Context())
+
+	err := r.ParseForm()
+	if err != nil {
+		log.Println(err)
+	}
+
+	email := r.Form.Get("email")
+	password := r.Form.Get("password")
+	form := forms.New(r.PostForm)
+	form.Required("email", "password")
+	form.IsEmail("email")
+
+	if !form.Valid() {
+		log.Println(err)
+		render.TemplatesRenderer(w, r, "login.page.tmpl", &models.TemplateData{
+			Form: form,
+		})
+		http.Error(w, "", http.StatusSeeOther)
+		return
+	}
+
+	id, _, err := m.DB.Authenticate(email, password)
+	if err != nil {
+		log.Println(err)
+		m.App.Session.Put(r.Context(), "error", "invalid login credentials")
+		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+		return
+	}
+	m.App.Session.Put(r.Context(), "user_id", id)
+	m.App.Session.Put(r.Context(), "flash", "You are logged in successfully")
+	http.Redirect(w, r, "/admin/dashboard", http.StatusSeeOther)
+}
+
+// AdminLogout logs an Admin out
+func (m *Repository) AdminLogout(w http.ResponseWriter, r *http.Request) {
+	_ = m.App.Session.Destroy(r.Context())
+	_ = m.App.Session.RenewToken(r.Context())
+	http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+
+}
+
+// AdminDashboard handles Admins dashboard
+func (m *Repository) AdminDashboard(w http.ResponseWriter, r *http.Request) {
+	render.TemplatesRenderer(w, r, "admin-dashboard.page.tmpl", &models.TemplateData{})
+}
+
+// AdminNewReservations shows lists of new reservations to the admin panel
+func (m *Repository) AdminNewReservations(w http.ResponseWriter, r *http.Request) {
+	reservations, err := m.DB.ViewNewReservations()
+	if err != nil {
+		helpers.ServerError(w, err)
+		return
+	}
+
+	data := make(map[string]interface{})
+	data["reservations"] = reservations
+
+	render.TemplatesRenderer(w, r, "admin-new-reservations.page.tmpl", &models.TemplateData{
+		Data: data,
+	})
+}
+
+// AdminAllReservations shows list of all reservations to the admin panel
+func (m *Repository) AdminAllReservations(w http.ResponseWriter, r *http.Request) {
+	reservations, err := m.DB.ViewALlReservations()
+	if err != nil {
+		helpers.ServerError(w, err)
+		return
+	}
+
+	data := make(map[string]interface{})
+	data["reservations"] = reservations
+
+	render.TemplatesRenderer(w, r, "admin-all-reservations.page.tmpl", &models.TemplateData{
+		Data: data,
+	})
+}
+
+// AdminShowReservation shows the reservation calendar to the admin panel
+func (m *Repository) AdminShowReservation(w http.ResponseWriter, r *http.Request) {
+	// split the URL up by /, and grab the 4th element as src and 5th element as id
+	URIPartition := strings.Split(r.RequestURI, "/")
+	src := URIPartition[3]
+	id, err := strconv.Atoi(URIPartition[4])
+	if err != nil {
+		helpers.ServerError(w, err)
+		return
+	}
+	res, err := m.DB.GetReservationByID(id)
+	if err != nil {
+		helpers.ServerError(w, err)
+		return
+	}
+
+	stringMap := make(map[string]string)
+	stringMap["src"] = src
+	data := make(map[string]interface{})
+	data["reservation"] = res
+	render.TemplatesRenderer(w, r, "admin-show-reservation.page.tmpl", &models.TemplateData{
+		Data:      data,
+		StringMap: stringMap,
+		Form:      forms.New(nil),
+	})
+}
+
+// AdminPostShowReservation updates the reservation to the database
+func (m *Repository) AdminPostShowReservation(w http.ResponseWriter, r *http.Request) {
+	// split the URL up by /, and grab the 4th element as src and 5th element as id
+	URIPartition := strings.Split(r.RequestURI, "/")
+	src := URIPartition[3]
+	id, err := strconv.Atoi(URIPartition[4])
+	if err != nil {
+		helpers.ServerError(w, err)
+		return
+	}
+	res, err := m.DB.GetReservationByID(id)
+	if err != nil {
+		helpers.ServerError(w, err)
+		return
+	}
+
+	err = r.ParseForm()
+	if err != nil {
+		helpers.ServerError(w, err)
+		return
+	}
+	res.FirstName = r.Form.Get("first_name")
+	res.LastName = r.Form.Get("last_name")
+	res.Email = r.Form.Get("email")
+	res.MobileNumber = r.Form.Get("mobile_number")
+
+	form := forms.New(r.PostForm)
+	form.Required("first_name", "email", "mobile_number")
+	form.MinLength("first_name", 3)
+	form.IsEmail("email")
+
+	//Invalid user input
+	if !form.Valid() {
+		stringMap := make(map[string]string)
+		stringMap["src"] = src
+		data := make(map[string]interface{})
+		data["reservation"] = res
+
+		render.TemplatesRenderer(w, r, "admin-show-reservation.page.tmpl", &models.TemplateData{
+			Form:      form,
+			Data:      data,
+			StringMap: stringMap,
+		})
+		return
+	}
+
+	stringMap := make(map[string]string)
+	stringMap["src"] = src
+	data := make(map[string]interface{})
+	data["reservation"] = res
+
+	err = m.DB.UpdateReservation(res)
+	if err != nil {
+		helpers.ServerError(w, err)
+		return
+	}
+
+	m.App.Session.Put(r.Context(), "flash", "Change Saved")
+	http.Redirect(w, r, fmt.Sprintf("/admin/%s-reservations", src), http.StatusSeeOther)
+}
+
+// AdminProcessReservation mark the reservation as processed
+func (m *Repository) AdminProcessReservation(w http.ResponseWriter, r *http.Request) {
+	// split the URL up by /, and grab the 4th element as src and 5th element as id
+	URIPartition := strings.Split(r.RequestURI, "/")
+	src := URIPartition[3]
+	id, err := strconv.Atoi(URIPartition[4])
+	if err != nil {
+		helpers.ServerError(w, err)
+		return
+	}
+	err = m.DB.UpdateProcessedForReservation(id, 1)
+	if err != nil {
+		helpers.ServerError(w, err)
+		return
+	}
+
+	m.App.Session.Put(r.Context(), "flash", "Reservation marked as processed")
+	http.Redirect(w, r, fmt.Sprintf("/admin/%s-reservations", src), http.StatusSeeOther)
+}
+
+// AdminDeleteReservation deletes reservation from the database
+func (m *Repository) AdminDeleteReservation(w http.ResponseWriter, r *http.Request) {
+	// split the URL up by /, and grab the 4th element as src and 5th element as id
+	URIPartition := strings.Split(r.RequestURI, "/")
+	src := URIPartition[3]
+	id, err := strconv.Atoi(URIPartition[4])
+	if err != nil {
+		helpers.ServerError(w, err)
+		return
+	}
+	err = m.DB.DeleteReservation(id)
+	if err != nil {
+		helpers.ServerError(w, err)
+		return
+	}
+
+	m.App.Session.Put(r.Context(), "flash", "Reservation Deleted Successfully")
+	http.Redirect(w, r, fmt.Sprintf("/admin/%s-reservations", src), http.StatusSeeOther)
+}
+
+// AdminReservationsCalender shows the reservation calendar to the admin panel
+func (m *Repository) AdminReservationsCalender(w http.ResponseWriter, r *http.Request) {
+	render.TemplatesRenderer(w, r, "admin-reservations-calender.page.tmpl", &models.TemplateData{})
 }

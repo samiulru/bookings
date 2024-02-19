@@ -23,7 +23,7 @@ func routes(app *config.AppConfig) http.Handler {
 	mux.Get("/contact", handlers.Repo.Contact)
 	mux.Get("/user/login", handlers.Repo.UserLogin)
 	mux.Post("/user/login", handlers.Repo.PostUserLogin)
-	mux.Get("/user/logout", handlers.Repo.UserLogout)
+	mux.Get("/user/logout", handlers.Repo.AdminLogout)
 
 	mux.Get("/search-availability", handlers.Repo.SearchAvailability)
 	mux.Post("/search-availability", handlers.Repo.PostSearchAvailability)
@@ -44,7 +44,15 @@ func routes(app *config.AppConfig) http.Handler {
 	mux.Route("/admin", func(mux chi.Router) {
 		mux.Use(Auth)
 
-		mux.Get("/dashboard", handlers.Repo.UserDashboard)
+		mux.Get("/dashboard", handlers.Repo.AdminDashboard)
+		mux.Get("/new-reservations", handlers.Repo.AdminNewReservations)
+		mux.Get("/all-reservations", handlers.Repo.AdminAllReservations)
+		mux.Get("/reservations-calender", handlers.Repo.AdminReservationsCalender)
+
+		mux.Get("/reservations/{src}/{id}", handlers.Repo.AdminShowReservation)
+		mux.Get("/process-reservation/{{$src}}/{id}", handlers.Repo.AdminProcessReservation)
+		mux.Get("/delete-reservation/{{$src}}/{id}", handlers.Repo.AdminDeleteReservation)
+		mux.Post("/reservations/{src}/{id}", handlers.Repo.AdminPostShowReservation)
 
 	})
 	return mux
