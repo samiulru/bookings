@@ -54,6 +54,7 @@ func run() (*driver.DB, error) {
 	gob.Register(models.Room{})
 	gob.Register(models.Restriction{})
 	gob.Register(models.RoomRestriction{})
+	gob.Register(map[string]int{})
 
 	//mailChan carries all the mail from any part of the app
 	//mailChan := make(chan models.MailData)

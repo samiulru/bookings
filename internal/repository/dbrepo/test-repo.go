@@ -105,7 +105,6 @@ func (m *testDBRepo) GetReservationByID(id int) (models.Reservation, error) {
 	return reservation, nil
 }
 
-
 // UpdatReservation updates reservation information in the database
 func (m *testDBRepo) UpdateReservation(r models.Reservation) error {
 	return nil
@@ -120,3 +119,15 @@ func (m *testDBRepo) DeleteReservation(id int) error {
 func (m *testDBRepo) UpdateProcessedForReservation(id, processed int) error {
 	return nil
 }
+
+// AllRooms returns a slice of all room
+func (m *testDBRepo) AllRooms() ([]models.Room, error) {
+	return nil, nil
+}
+
+// GetRestrictionsForRoomByID returns a slice of all restrictions for a room within the given date range
+func (m *testDBRepo) GetRestrictionsForRoomByDate(roomID int, start_date, end_date time.Time) ([]models.RoomRestriction, error) {
+
+	return nil, nil
+}
+

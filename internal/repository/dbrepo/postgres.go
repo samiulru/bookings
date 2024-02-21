@@ -199,6 +199,38 @@ func (m *postgresDBRepo) Authenticate(email, testPassword string) (int, string, 
 	return id, hashedPassword, nil
 }
 
+// AllRooms returns a slice of all room
+func (m *postgresDBRepo) AllRooms() ([]models.Room, error) {
+	cntx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	var rooms []models.Room
+	query := `select id, room_name, created_at, updated_at from rooms order by room_name`
+
+	rows, err := m.DB.QueryContext(cntx, query)
+	if err != nil {
+		return rooms, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var room models.Room
+		err = rows.Scan(
+			&room.ID,
+			&room.RoomName,
+			&room.CreatedAt,
+			&room.UpdateAt,
+		)
+		if err != nil {
+			return rooms, err
+		}
+		rooms = append(rooms, room)
+	}
+	if err = rows.Err(); err != nil {
+		return rooms, err
+	}
+	return rooms, nil
+}
+
 // GetRoomByID searches room by ID
 func (m *postgresDBRepo) GetRoomByID(id int) (models.Room, error) {
 	cntx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
@@ -391,4 +423,42 @@ func (m *postgresDBRepo) DeleteReservation(id int) error {
 	_, err := m.DB.ExecContext(cntx, query, id)
 
 	return err
+}
+
+// GetRestrictionsForRoomByID returns a slice of all restrictions for a room within the given date range
+func (m *postgresDBRepo) GetRestrictionsForRoomByDate(roomID int, start_date, end_date time.Time) ([]models.RoomRestriction, error) {
+	cntx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	var roomRestrictions []models.RoomRestriction
+	query := `select id, room_id, coalesce(reservation_id, 0), restriction_id, created_at, updated_at 
+		from room_restrictions where start_date <= $1 and end_date > $2 and room_id = $3`
+
+	rows, err := m.DB.QueryContext(cntx, query, start_date, end_date, roomID)
+	if err != nil {
+		return roomRestrictions, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var r models.RoomRestriction
+		err = rows.Scan(
+			&r.ID,
+			&r.RoomID,
+			&r.ReservationID,
+			&r.RestrictionId,
+			&r.CreatedAt,
+			&r.UpdateAt,
+		)
+
+		if err != nil {
+			return roomRestrictions, err
+		}
+		roomRestrictions = append(roomRestrictions, r)
+	}
+
+	if err = rows.Err(); err != nil {
+		return roomRestrictions, err
+	}
+	return roomRestrictions, err
 }

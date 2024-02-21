@@ -5,7 +5,48 @@
 {{end}}
 
 {{define "content"}}
+    {{$now := index .Data "now"}}
+    {{$rooms := index .Data "rooms"}}
+    {{$daysInMonth := index .IntMap "days_in_month"}}
+    {{$currentMonth := index .IntMap "this_month"}}
+    {{$currentYear := index .IntMap "this_month_year"}}
     <div class="col-md-12">
-        Reservation Calender
+        <div class="text-center">
+            <h3>{{formatDate $now "Jan"}} - {{formatDate $now "2006"}}</h3>
+            <hr>
+        </div>
+        <div class="float-left">
+            <a class="btn btn-dark btn-sm" href="/admin/reservations-calender?y={{index .StringMap "last_month_year"}}&m={{index .StringMap "last_month"}}">&lt;&lt;</a>
+        </div>
+        <div class="float-right">
+            <a class="btn btn-dark btn-sm" href="/admin/reservations-calender?y={{index .StringMap "next_month_year"}}&m={{index .StringMap "next_month"}}">&gt;&gt;</a>
+        </div>
+        <div class="clearfix"></div>
+        <div class="row mt-4">
+            {{range $rooms}}
+            <h4>
+                {{.RoomName}}
+            </h4>
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered">
+                    <tr class="table-dark">
+                        {{range $i := iterate $daysInMonth}}
+                            <td class="text-center">
+                                {{$i}}    
+                            </td>
+                        {{end}}
+                    </tr>
+                    <tr>
+                        {{range $i := iterate $daysInMonth}}
+                            <td class="text-center">
+                                <input type="checkbox">  
+                            </td>
+                        {{end}}
+                    </tr>
+                </table>
+            </div>
+        {{end}}
+        </div>
+        
     </div>
 {{end}}

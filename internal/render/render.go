@@ -4,17 +4,20 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/justinas/nosurf"
-	"github.com/samiulru/bookings/internal/config"
-	"github.com/samiulru/bookings/internal/models"
 	"html/template"
 	"net/http"
 	"path/filepath"
 	"time"
+
+	"github.com/justinas/nosurf"
+	"github.com/samiulru/bookings/internal/config"
+	"github.com/samiulru/bookings/internal/models"
 )
 
 var funcMap = template.FuncMap{
-	"dateOnly": DateOnly,
+	"dateOnly":   DateOnly,
+	"formatDate": FormatDate,
+	"iterate":    Iterate,
 }
 
 var app *config.AppConfig
@@ -28,6 +31,22 @@ func NewTemplates(a *config.AppConfig) {
 // DateOnly returns Date DD-MM-YYYY format
 func DateOnly(t time.Time) string {
 	return t.Format("02-Jan-2006")
+}
+
+// FormatDate returns Date in a specific format
+func FormatDate(t time.Time, format string) string {
+	return t.Format(format)
+}
+
+// Iterate returns a slice of Integers, from 1 to count
+func Iterate(count int) []int {
+	var i int
+	var items []int
+	for i = 1; i <= count; i++ {
+		items = append(items, i)
+	}
+	return items
+
 }
 
 // AddDefaultData sets the template data for each handler

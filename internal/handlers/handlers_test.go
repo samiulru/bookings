@@ -16,10 +16,10 @@ import (
 	"time"
 )
 
-type postData struct {
-	key   string
-	value string
-}
+// type postData struct {
+// 	key   string
+// 	value string
+// }
 
 var theTests = []struct {
 	name               string
