@@ -131,3 +131,13 @@ func (m *testDBRepo) GetRestrictionsForRoomByDate(roomID int, start_date, end_da
 	return nil, nil
 }
 
+
+// InsertBlockForRoom inserts room restriction due to room-upgradation or maintainacne 
+func (m *testDBRepo) InsertBlockForRoom(roomID int, start_date, end_date time.Time) error {
+	return nil
+}
+
+// DeleteBlockForRoom deletes room restriction due to completed room-upgradation or maintainacne 
+func (m *testDBRepo) DeleteBlockForRoom(id int) error {
+	return nil
+}

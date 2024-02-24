@@ -431,10 +431,11 @@ func (m *postgresDBRepo) GetRestrictionsForRoomByDate(roomID int, start_date, en
 	defer cancel()
 
 	var roomRestrictions []models.RoomRestriction
-	query := `select id, room_id, coalesce(reservation_id, 0), restriction_id, created_at, updated_at 
+
+		query := `select id, start_date, end_date, room_id, coalesce(reservation_id, 0), restriction_id, created_at, updated_at 
 		from room_restrictions where start_date <= $1 and end_date > $2 and room_id = $3`
 
-	rows, err := m.DB.QueryContext(cntx, query, start_date, end_date, roomID)
+	rows, err := m.DB.QueryContext(cntx, query, end_date, start_date, roomID)
 	if err != nil {
 		return roomRestrictions, err
 	}
@@ -444,6 +445,8 @@ func (m *postgresDBRepo) GetRestrictionsForRoomByDate(roomID int, start_date, en
 		var r models.RoomRestriction
 		err = rows.Scan(
 			&r.ID,
+			&r.StartDate,
+			&r.EndDate,
 			&r.RoomID,
 			&r.ReservationID,
 			&r.RestrictionId,
@@ -460,5 +463,45 @@ func (m *postgresDBRepo) GetRestrictionsForRoomByDate(roomID int, start_date, en
 	if err = rows.Err(); err != nil {
 		return roomRestrictions, err
 	}
-	return roomRestrictions, err
+	return roomRestrictions, nil
+}
+
+// InsertBlockForRoom inserts room restriction due to room-upgradation or maintainacne 
+func (m *postgresDBRepo) InsertBlockForRoom(roomID int, start_date, end_date time.Time) error {
+	cntx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	stmt := `insert into room_restrictions (start_date, end_date, room_id, restriction_id, created_at, updated_at)
+			values ($1, $2, $3, $4, $5, $6)`
+
+	_, err := m.DB.ExecContext(cntx, stmt,
+		start_date,
+		end_date,
+		roomID,
+		2,
+		time.Now(),
+		time.Now(),
+	)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// DeleteBlockForRoom deletes room restriction due to completed room-upgradation or maintainacne 
+func (m *postgresDBRepo) DeleteBlockForRoom(id int) error {
+	cntx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	stmt := `delete from room_restrictions where id = $1`
+
+	_, err := m.DB.ExecContext(cntx, stmt, id)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

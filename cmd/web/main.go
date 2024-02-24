@@ -70,10 +70,10 @@ func run() (*driver.DB, error) {
 	session = scs.New()
 	session.Lifetime = 24 * time.Hour
 	session.Cookie.Persist = true            //change it to false if it needs to delete cookie at the closing of the browser
-	session.Cookie.Secure = app.InProduction //local host is insecure connection which is used in InProduction mode
+	session.Cookie.Secure = app.InProduction //localhost is insecure connection which is used in InProduction mode
 
 	//Setting up the app-config values
-	app.UseCache = false //false when in developer mode
+	app.UseCache = false //true when In-Production mode and false when in developer mode
 	app.TemplateCache = tmplCache
 	app.InProduction = false //change it to true when in developer mode
 	app.Session = session

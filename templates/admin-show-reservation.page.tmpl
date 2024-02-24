@@ -8,6 +8,8 @@
     <div class="container">
         {{$res := index .Data "reservation"}}
         {{$src := index .StringMap "src"}}
+        {{$currentMonth := index .StringMap "month"}}
+        {{$currentYear := index .StringMap "year"}}
         <div class="row">
             <div class="navbar navbar-dark bg-dark text-center text-white align-items-center border rounded" >
                 <div class="col">Reservation ID: {{$res.ID}}</div>
@@ -19,6 +21,8 @@
         <div class="row mt-4">
             <form action="/admin/reservations/{{$src}}/{{$res.ID}}" method="post" novalidate>
                 <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+                <input type="hidden" name="year" value="{{$currentYear}}">
+                <input type="hidden" name="month" value="{{$currentMonth}}">
                 <div class="form-group">
                     <label for="first_name"><b>First Name:</b></label>
                     {{with .Form.Err.Get "first_name"}}
@@ -53,8 +57,14 @@
                 </div>
                 <div class="float-left">
                     <input type="submit" class="btn btn-success rounded" value="Save">
+                    {{if eq $src "cal"}}
+                    <a href="#!" onclick="window.history.go(-1)" class="btn btn-warning rounded">Cancel</a>
+                    {{else}}
                     <a href="/admin/{{$src}}-reservations" class="btn btn-warning rounded">Cancel</a>
-                    <a href="#!" class="btn btn-info rounded" onclick='processReservation({{$res.ID}})'>Mark as Processed</a>
+                    {{end}}
+                    {{if eq $res.Processed 0}}
+                        <a href="#!" class="btn btn-info rounded" onclick='processReservation({{$res.ID}})'>Mark as Processed</a>
+                    {{end}}
                 </div>
                 <div class="float-right">
                     <a href="#!" class="btn btn-danger rounded" onclick='deleteReservation({{$res.ID}})'>Delete</a>
@@ -67,6 +77,9 @@
 
 {{define "js"}}
     {{$src:= index .StringMap "src"}}
+    {{$currentMonth := index .StringMap "month"}}
+    {{$currentYear := index .StringMap "year"}}
+
     <script src="/static/js/form-validation.js"></script>
     <script>
         let attention = Prompt();
@@ -76,7 +89,7 @@
                 msg: 'Are you sure?',
                 callback: function(result) {
                     if (result !== false) {
-                        window.location.href = "/admin/process-reservation/{{$src}}/" + id;
+                        window.location.href = "/admin/process-reservation/{{$src}}/" + id + "/do?y={{$currentYear}}&m={{$currentMonth}}";
                     }
                 }
             })
@@ -88,7 +101,7 @@
                 msg: 'Are you sure?',
                 callback: function(result) {
                     if (result !== false) {
-                        window.location.href = "/admin/delete-reservation/{{$src}}/" + id;
+                        window.location.href = "/admin/delete-reservation/{{$src}}/" + id + "/do?y={{$currentYear}}&m={{$currentMonth}}";
                     }
                 }
             })

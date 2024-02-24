@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"net/http"
 	"path/filepath"
+	"strconv"
 	"time"
 
 	"github.com/justinas/nosurf"
@@ -18,6 +19,7 @@ var funcMap = template.FuncMap{
 	"dateOnly":   DateOnly,
 	"formatDate": FormatDate,
 	"iterate":    Iterate,
+	"month":      Month,
 }
 
 var app *config.AppConfig
@@ -47,6 +49,13 @@ func Iterate(count int) []int {
 	}
 	return items
 
+}
+
+// Month returns the month name
+func Month(m string) string {
+	name := []string{"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"}
+	n, _ := strconv.Atoi(m)
+	return name[n-1]
 }
 
 // AddDefaultData sets the template data for each handler
