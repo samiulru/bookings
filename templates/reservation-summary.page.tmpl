@@ -16,6 +16,7 @@
                 {{$res := index .Data "reservation"}}
                 <table class="table table-striped text-white">
                     <thead>Tourist Information:</thead>
+                    <br>
                     <tbody>
                         <tr>
                             <td>Name:</td>
@@ -42,11 +43,11 @@
                         </tr>
                         <tr>
                             <td>Check-in:</td>
-                            <td><td>{{$res.StartDate}}</td></td>
+                            <td><td>{{formatDate $res.StartDate "02-Jan-2006"}}</td></td>
                         </tr>
                         <tr>
                             <td>Check-out:</td>
-                            <td><td>{{$res.EndDate}}</td></td>
+                            <td><td>{{formatDate $res.EndDate "02-Jan-2006"}}</td></td>
                         </tr>
                     </tbody>
                 </table>
@@ -58,5 +59,14 @@
             <div class="col"></div>
         </div>
     </div>
+
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
 
 {{end}}

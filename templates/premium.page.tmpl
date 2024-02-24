@@ -55,7 +55,6 @@
                 let formData = new FormData(myform);
                 formData.append("csrf_token", "{{.CSRFToken}}");
                 formData.append("room_id", "2");
-                console.log(formData);
                 fetch('/search-availability-json',{
                         method: "post",
                         body: formData

@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/gob"
+	"flag"
 	"fmt"
 	"github.com/samiulru/bookings/internal/driver"
 	"github.com/samiulru/bookings/internal/helpers"
@@ -56,6 +57,22 @@ func run() (*driver.DB, error) {
 	gob.Register(models.RoomRestriction{})
 	gob.Register(map[string]int{})
 
+	// read flags
+	inProduction := flag.Bool("production", true, "Application is in production mode")
+	useCache := flag.Bool("cache", true, "Use template cache")
+	dbHost := flag.String("dbhost", "localhost", "Database host")
+	dbName := flag.String("dbname", "", "Database name")
+	dbUser := flag.String("dbuser", "", "Database user")
+	dbPass := flag.String("dbpass", "", "Database password")
+	dbPort := flag.String("dbport", "5432", "Database port")
+	dbsSSL := flag.String("dbssl", "disable", "Database SSL settings (disable, prefer, require)")
+
+	flag.Parse()
+	if *dbName == "" || *dbUser == "" {
+		fmt.Println("Missing required flags")
+		os.Exit(1)
+	}
+
 	//mailChan carries all the mail from any part of the app
 	//mailChan := make(chan models.MailData)
 	//app.MailChan = mailChan
@@ -73,14 +90,16 @@ func run() (*driver.DB, error) {
 	session.Cookie.Secure = app.InProduction //localhost is insecure connection which is used in InProduction mode
 
 	//Setting up the app-config values
-	app.UseCache = false //true when In-Production mode and false when in developer mode
+	app.UseCache = *useCache //true when In-Production mode and false when in developer mode
 	app.TemplateCache = tmplCache
-	app.InProduction = false //change it to true when in developer mode
+	app.InProduction = *inProduction //change it to true when in developer mode
 	app.Session = session
 
 	// connect to Database
 	log.Println("Connecting to database...")
-	db, err := driver.ConnectSQL("host=localhost port=5432 dbname=bookings user=postgres password=samiul@10526")
+
+	dbConnection := fmt.Sprintf("host=%s port=%s dbname=%s user=%s password=%s sslmode=%s", *dbHost, *dbPort, *dbName, *dbUser, *dbPass, *dbsSSL)
+	db, err := driver.ConnectSQL(dbConnection)
 	if err != nil {
 		log.Fatal("Cannot connect to database")
 		return nil, err

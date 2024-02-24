@@ -16,7 +16,6 @@ import (
 )
 
 var funcMap = template.FuncMap{
-	"dateOnly":   DateOnly,
 	"formatDate": FormatDate,
 	"iterate":    Iterate,
 	"month":      Month,
@@ -28,11 +27,6 @@ var pathToTemplates = "./templates"
 // NewTemplates sets the config for template package
 func NewTemplates(a *config.AppConfig) {
 	app = a
-}
-
-// DateOnly returns Date DD-MM-YYYY format
-func DateOnly(t time.Time) string {
-	return t.Format("02-Jan-2006")
 }
 
 // FormatDate returns Date in a specific format

@@ -2,8 +2,9 @@ package dbrepo
 
 import (
 	"errors"
-	"github.com/samiulru/bookings/internal/models"
 	"time"
+
+	"github.com/samiulru/bookings/internal/models"
 )
 
 func (m *testDBRepo) AllUsers() bool {
@@ -13,7 +14,7 @@ func (m *testDBRepo) AllUsers() bool {
 // Reservations inserts reservation info to the database
 func (m *testDBRepo) InsertReservations(res models.Reservation) (int, error) {
 	if res.RoomID == 100 {
-		return 0, errors.New("Unable to reserve this room")
+		return 0, errors.New("unable to reserve this room")
 	}
 	return 1, nil
 }
@@ -21,7 +22,7 @@ func (m *testDBRepo) InsertReservations(res models.Reservation) (int, error) {
 // InsertRoomRestriction inserts room restriction info to the database
 func (m *testDBRepo) InsertRoomRestriction(res models.RoomRestriction) error {
 	if res.RoomID == 200 {
-		return errors.New("Unable to insert room restriction this room")
+		return errors.New("unable to insert room restriction this room")
 	}
 	return nil
 }
@@ -37,7 +38,7 @@ func (m *testDBRepo) SearchAvailabilityByDatesByRoomID(start, end time.Time, roo
 	//	return false, nil
 	//}
 	if roomID == 2 {
-		return false, errors.New("No room available")
+		return false, errors.New("no room available")
 	}
 	return true, nil
 }
@@ -51,7 +52,7 @@ func (m *testDBRepo) SearchAvailabilityForAllRooms(start, end time.Time) ([]mode
 	ed := end.Format(layout)
 	//Invalid Date pair
 	if sd == "02-01-2050" && ed == "01-01-2050" {
-		return rooms, errors.New("Invalid Date pair, end date can't be before the start date")
+		return rooms, errors.New("invalid Date pair, end date can't be before the start date")
 	}
 
 	//Room Unavailable for this time span
@@ -66,7 +67,7 @@ func (m *testDBRepo) SearchAvailabilityForAllRooms(start, end time.Time) ([]mode
 func (m *testDBRepo) GetRoomByID(id int) (models.Room, error) {
 	var room models.Room
 	if id > 2 {
-		return room, errors.New("Non existent room")
+		return room, errors.New("non existent room")
 	}
 	return room, nil
 }
@@ -81,9 +82,10 @@ func (m *testDBRepo) UpdateUser(u models.User) error {
 }
 
 func (m *testDBRepo) Authenticate(email, testPassword string) (int, string, error) {
-	var id int
-	var hashedPassword string
-	return id, hashedPassword, nil
+	if email == "samiul@gmail.com" {
+		return 1, "", nil
+	}
+	return -1, "", errors.New("invalid Cerdentials")
 }
 
 // ViewALlReservations returns a slice of all reservations
@@ -131,13 +133,12 @@ func (m *testDBRepo) GetRestrictionsForRoomByDate(roomID int, start_date, end_da
 	return nil, nil
 }
 
-
-// InsertBlockForRoom inserts room restriction due to room-upgradation or maintainacne 
+// InsertBlockForRoom inserts room restriction due to room-upgradation or maintainacne
 func (m *testDBRepo) InsertBlockForRoom(roomID int, start_date, end_date time.Time) error {
 	return nil
 }
 
-// DeleteBlockForRoom deletes room restriction due to completed room-upgradation or maintainacne 
+// DeleteBlockForRoom deletes room restriction due to completed room-upgradation or maintainacne
 func (m *testDBRepo) DeleteBlockForRoom(id int) error {
 	return nil
 }

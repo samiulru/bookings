@@ -3,6 +3,15 @@ package handlers
 import (
 	"encoding/gob"
 	"fmt"
+	"html/template"
+	"log"
+	"net/http"
+	"os"
+	"path/filepath"
+	"strconv"
+	"testing"
+	"time"
+
 	"github.com/alexedwards/scs/v2"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -10,16 +19,37 @@ import (
 	"github.com/samiulru/bookings/internal/config"
 	"github.com/samiulru/bookings/internal/models"
 	"github.com/samiulru/bookings/internal/render"
-	"html/template"
-	"log"
-	"net/http"
-	"os"
-	"path/filepath"
-	"testing"
-	"time"
 )
 
-var funcMap = template.FuncMap{}
+var funcMap = template.FuncMap{
+	"formatDate": FormatDate,
+	"iterate":    Iterate,
+	"month":      Month,
+}
+
+// FormatDate returns Date in a specific format
+func FormatDate(t time.Time, format string) string {
+	return t.Format(format)
+}
+
+// Iterate returns a slice of Integers, from 1 to count
+func Iterate(count int) []int {
+	var i int
+	var items []int
+	for i = 1; i <= count; i++ {
+		items = append(items, i)
+	}
+	return items
+
+}
+
+// Month returns the month name
+func Month(m string) string {
+	name := []string{"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"}
+	n, _ := strconv.Atoi(m)
+	return name[n-1]
+}
+
 var pathToTemplates = "./../../templates"
 var app config.AppConfig
 var session *scs.SessionManager
@@ -27,6 +57,12 @@ var session *scs.SessionManager
 func TestMain(m *testing.M) {
 	//What I am going to put in the session
 	gob.Register(models.Reservation{})
+	gob.Register(models.User{})
+	gob.Register(models.Room{})
+	gob.Register(models.Restriction{})
+	gob.Register(models.RoomRestriction{})
+	gob.Register(map[string]int{})
+
 	//Creating template cache
 	tmplCache, err := CreateTestTemplateCache()
 	if err != nil {
@@ -78,6 +114,21 @@ func getRoutes() http.Handler {
 	mux.Get("/make-reservation", Repo.Reservation)
 	mux.Post("/make-reservation", Repo.PostReservation)
 	mux.Get("/reservation-summary", Repo.ReservationSummary)
+
+	mux.Get("/user/login", Repo.UserLogin)
+	mux.Post("/user/login", Repo.PostUserLogin)
+	mux.Get("/user/logout", Repo.AdminLogout)
+
+	mux.Get("/admin/dashboard", Repo.AdminDashboard)
+	mux.Get("/admin/new-reservations", Repo.AdminNewReservations)
+	mux.Get("/admin/all-reservations", Repo.AdminAllReservations)
+	mux.Get("/admin/reservations-calender", Repo.AdminReservationsCalender)
+	mux.Post("/admin/reservations-calender", Repo.AdminPostReservationsCalender)
+
+	mux.Get("/admin/reservations/{src}/{id}/show", Repo.AdminShowReservation)
+	mux.Post("/admin/reservations/{src}/{id}", Repo.AdminPostShowReservation)
+	mux.Get("/admin/process-reservation/{src}/{id}/do", Repo.AdminProcessReservation)
+	mux.Get("/admin/delete-reservation/{src}/{id}/do", Repo.AdminDeleteReservation)
 
 	//FileServer for serving files
 	fileServer := http.FileServer(http.Dir("./static/"))

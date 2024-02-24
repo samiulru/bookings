@@ -38,8 +38,16 @@
             });
             if (formValues) {
               const start_date = document.getElementById("start_date").value;
-              const ende_date = document.getElementById("end_date").value;
-              if(start_date === "" || end_date === ""){
+              const end_date = document.getElementById("end_date").value;
+              if(start_date === ""){
+                Swal.fire({
+                  html: `<b style="color:black;">Invalid Date</b>`,
+                  showConfirmButton: false,
+                  showCancelButton: true,
+                  cancelButtonColor: "rgb(50,50,50)",
+
+                });
+              } else if(end_date === ""){
                 Swal.fire({
                   html: `<b style="color:black;">Invalid Date</b>`,
                   showConfirmButton: false,

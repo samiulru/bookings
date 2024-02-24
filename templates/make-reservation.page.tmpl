@@ -16,7 +16,7 @@
         <div class="col"><h2>Traveller's Information</h2></div>
         <div class="col"></div>
     </div>
-    <div class="navbar navbar-dark bg-dark text-center text-white align-items-center border rounded" >
+    <div class="navbar navbar-light" style="background-color: #90b2ca;">
         {{$str := .StringMap}}
         <div class="col">Check-in: {{$str.start_date}}</div>
         <div class="col">Check-out: {{$str.end_date}}</div>
@@ -60,8 +60,9 @@
                     <input type="text" name="mobile_number" id="mobile_number" class="make_reservation_input {{with .Form.Err.Get "mobile_number"}} is-invalid {{end}}" value="{{$res.MobileNumber}}" required>
                 </div>
                 <div class="row">
-                    <div class="col ml-5"><input type="submit" class="btn btn-success text-center" value="Submit"></div>
-
+                    <div class="col"></div>
+                    <div class="col"><input type="submit" class="btn btn-success text-center" value="Submit"></div>
+                    <div class="col"></div>
                 </div>
             </form>
         </div>

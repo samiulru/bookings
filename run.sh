@@ -1,2 +1,2 @@
 go build -o bookings cmd/web/*.go
-./bookings
+./bookings -production=false -cache=false -dbname=bookings -dbuser=postgres -dbpass=samiul@10526

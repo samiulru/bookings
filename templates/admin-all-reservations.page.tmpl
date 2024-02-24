@@ -36,8 +36,8 @@
                     </td>
                     <td>{{.MobileNumber}}</td>
                     <td>{{.Room.RoomName}}</td>
-                    <td>{{dateOnly .StartDate}}</td>
-                    <td>{{dateOnly .EndDate}}</td>
+                    <td>{{formatDate .StartDate "02-Jan-2006"}}</td>
+                    <td>{{formatDate .EndDate "02-Jan-2006"}}</td>
                     <td>{{.Processed}}</td>
                     <td>{{.Email}}</td>
                 </tr>

@@ -1,24 +1,19 @@
-img{
-    width: 800px;
-    height: 600px;
-  }
-  #dashed-1 {
-    margin-bottom: 5px;
-    padding: 3px;
-    border: none;
-    height: 2px;
-    background: #000;
-    background: repeating-linear-gradient(70deg, #000, #000 6px, transparent 6px, transparent 8px);
-  }
+hr {
+  border: none;
+  height: 2px;
+  /* Set the hr color */
+  background-color: #333;  /* Modern Browsers */
+  background: repeating-linear-gradient(70deg, #000, #000 6px, transparent 6px, transparent 8px);
+}       
 .page-footer{
   color: white;
   text-align: center;
   background-color: #1b2327;
   font-size: 80%;
-  height: 6em;
+  height: 10em;
   margin-top: 1em;
   padding: 1em;
-}
+  }
 .form-field-size{
   max-width: 60%;
   min-width: 50%;
@@ -50,5 +45,4 @@ img{
 } 
 .swal2-styled{
   background-color: green;
-
 }
