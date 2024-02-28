@@ -1,0 +1,2 @@
+drop_column("rooms", "subtitle")
+drop_column("rooms", "body")

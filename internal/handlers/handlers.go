@@ -48,34 +48,81 @@ func NewHandler(r *Repository) {
 	Repo = r
 }
 
+func (m *Repository) myroomsList(w http.ResponseWriter) map[string]interface{} {
+	rooms, err := m.DB.AllRooms()
+	if err != nil {
+		helpers.ServerError(w, err)
+	}
+	roomsList := make(map[string]interface{})
+	roomsList["roomsList"] = rooms
+
+	return roomsList
+
+}
+
 // Home handles the home page
 func (m *Repository) Home(w http.ResponseWriter, r *http.Request) {
-	_ = render.TemplatesRenderer(w, r, "home.page.tmpl", &models.TemplateData{})
+	_ = render.TemplatesRenderer(w, r, "home.page.tmpl", &models.TemplateData{
+		RoomsList: m.myroomsList(w),
+	})
 }
 
 // About handles the about page
 func (m *Repository) About(w http.ResponseWriter, r *http.Request) {
-	_ = render.TemplatesRenderer(w, r, "about.page.tmpl", &models.TemplateData{})
+	_ = render.TemplatesRenderer(w, r, "about.page.tmpl", &models.TemplateData{
+		RoomsList: m.myroomsList(w),
+	})
 }
 
 // Economical handles the room page
-func (m *Repository) Economical(w http.ResponseWriter, r *http.Request) {
-	_ = render.TemplatesRenderer(w, r, "economical.page.tmpl", &models.TemplateData{})
-}
+// func (m *Repository) Economical(w http.ResponseWriter, r *http.Request) {
+// 	_ = render.TemplatesRenderer(w, r, "economical.page.tmpl", &models.TemplateData{})
+// }
 
-// Premium handles the room page
-func (m *Repository) Premium(w http.ResponseWriter, r *http.Request) {
-	_ = render.TemplatesRenderer(w, r, "premium.page.tmpl", &models.TemplateData{})
+// // Premium handles the room page
+// func (m *Repository) Premium(w http.ResponseWriter, r *http.Request) {
+// 	_ = render.TemplatesRenderer(w, r, "premium.page.tmpl", &models.TemplateData{})
+// }
+
+// RoomsHandler handles the room pages
+func (m *Repository) RoomsHandler(w http.ResponseWriter, r *http.Request) {
+	// split the URL up by /, and grab the 3rd element
+	URIPartition := strings.Split(r.RequestURI, "/")
+	roomID, err := strconv.Atoi(URIPartition[2])
+	if err != nil {
+		m.App.Session.Put(r.Context(), "error", "missing url parameter")
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
+
+	room, err := m.DB.GetRoomByID(roomID)
+	if err != nil {
+		m.App.Session.Put(r.Context(), "error", "can't get room info! Please try again")
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
+
+	room.Thumbnail = "/static/images/" + URIPartition[2] + "_" + strings.ReplaceAll(room.RoomName, " ", "") + ".png"
+	data := make(map[string]interface{})
+	data["rooms"] = room
+	_ = render.TemplatesRenderer(w, r, "rooms.page.tmpl", &models.TemplateData{
+		Data:      data,
+		RoomsList: m.myroomsList(w),
+	})
 }
 
 // Contact handles contact page
 func (m *Repository) Contact(w http.ResponseWriter, r *http.Request) {
-	_ = render.TemplatesRenderer(w, r, "contact.page.tmpl", &models.TemplateData{})
+	_ = render.TemplatesRenderer(w, r, "contact.page.tmpl", &models.TemplateData{
+		RoomsList: m.myroomsList(w),
+	})
 }
 
 // SearchAvailability handles search availability page for GET request
 func (m *Repository) SearchAvailability(w http.ResponseWriter, r *http.Request) {
-	_ = render.TemplatesRenderer(w, r, "search-availability.page.tmpl", &models.TemplateData{})
+	_ = render.TemplatesRenderer(w, r, "search-availability.page.tmpl", &models.TemplateData{
+		RoomsList: m.myroomsList(w),
+	})
 }
 
 // PostSearchAvailability handles search availability page for POST request
@@ -119,7 +166,8 @@ func (m *Repository) PostSearchAvailability(w http.ResponseWriter, r *http.Reque
 	m.App.Session.Put(r.Context(), "reservation", res)
 
 	_ = render.TemplatesRenderer(w, r, "choose-rooms.page.tmpl", &models.TemplateData{
-		Data: data,
+		RoomsList: m.myroomsList(w),
+		Data:      data,
 	})
 }
 
@@ -276,6 +324,7 @@ func (m *Repository) Reservation(w http.ResponseWriter, r *http.Request) {
 	data["reservation"] = res
 
 	render.TemplatesRenderer(w, r, "make-reservation.page.tmpl", &models.TemplateData{
+		RoomsList: m.myroomsList(w),
 		Form:      forms.New(nil),
 		Data:      data,
 		StringMap: strMap,
@@ -315,6 +364,7 @@ func (m *Repository) PostReservation(w http.ResponseWriter, r *http.Request) {
 		strMap["room_name"] = res.Room.RoomName
 
 		render.TemplatesRenderer(w, r, "make-reservation.page.tmpl", &models.TemplateData{
+			RoomsList: m.myroomsList(w),
 			Form:      form,
 			Data:      data,
 			StringMap: strMap,
@@ -385,7 +435,8 @@ func (m *Repository) ReservationSummary(w http.ResponseWriter, r *http.Request) 
 	data := make(map[string]interface{})
 	data["reservation"] = reservation
 	_ = render.TemplatesRenderer(w, r, "reservation-summary.page.tmpl", &models.TemplateData{
-		Data: data,
+		RoomsList: m.myroomsList(w),
+		Data:      data,
 	})
 }
 
@@ -396,7 +447,8 @@ func (m *Repository) ReservationSummary(w http.ResponseWriter, r *http.Request) 
 // UserLogin handles UserLogin page
 func (m *Repository) UserLogin(w http.ResponseWriter, r *http.Request) {
 	_ = render.TemplatesRenderer(w, r, "login.page.tmpl", &models.TemplateData{
-		Form: forms.New(nil),
+		RoomsList: m.myroomsList(w),
+		Form:      forms.New(nil),
 	})
 }
 
@@ -418,7 +470,8 @@ func (m *Repository) PostUserLogin(w http.ResponseWriter, r *http.Request) {
 
 	if !form.Valid() {
 		_ = render.TemplatesRenderer(w, r, "login.page.tmpl", &models.TemplateData{
-			Form: form,
+			RoomsList: m.myroomsList(w),
+			Form:      form,
 		})
 		http.Error(w, "", http.StatusSeeOther)
 		return
@@ -445,7 +498,9 @@ func (m *Repository) AdminLogout(w http.ResponseWriter, r *http.Request) {
 
 // AdminDashboard handles Admins dashboard
 func (m *Repository) AdminDashboard(w http.ResponseWriter, r *http.Request) {
-	render.TemplatesRenderer(w, r, "admin-dashboard.page.tmpl", &models.TemplateData{})
+	render.TemplatesRenderer(w, r, "admin-dashboard.page.tmpl", &models.TemplateData{
+		RoomsList: m.myroomsList(w),
+	})
 }
 
 // AdminNewReservations shows lists of new reservations to the admin panel
@@ -460,7 +515,8 @@ func (m *Repository) AdminNewReservations(w http.ResponseWriter, r *http.Request
 	data["reservations"] = reservations
 
 	render.TemplatesRenderer(w, r, "admin-new-reservations.page.tmpl", &models.TemplateData{
-		Data: data,
+		RoomsList: m.myroomsList(w),
+		Data:      data,
 	})
 }
 
@@ -476,7 +532,8 @@ func (m *Repository) AdminAllReservations(w http.ResponseWriter, r *http.Request
 	data["reservations"] = reservations
 
 	render.TemplatesRenderer(w, r, "admin-all-reservations.page.tmpl", &models.TemplateData{
-		Data: data,
+		RoomsList: m.myroomsList(w),
+		Data:      data,
 	})
 }
 
@@ -506,6 +563,7 @@ func (m *Repository) AdminShowReservation(w http.ResponseWriter, r *http.Request
 	data := make(map[string]interface{})
 	data["reservation"] = res
 	render.TemplatesRenderer(w, r, "admin-show-reservation.page.tmpl", &models.TemplateData{
+		RoomsList: m.myroomsList(w),
 		Data:      data,
 		StringMap: stringMap,
 		Form:      forms.New(nil),
@@ -551,6 +609,7 @@ func (m *Repository) AdminPostShowReservation(w http.ResponseWriter, r *http.Req
 		data["reservation"] = res
 
 		render.TemplatesRenderer(w, r, "admin-show-reservation.page.tmpl", &models.TemplateData{
+			RoomsList: m.myroomsList(w),
 			Form:      form,
 			Data:      data,
 			StringMap: stringMap,
@@ -713,6 +772,7 @@ func (m *Repository) AdminReservationsCalender(w http.ResponseWriter, r *http.Re
 	intMap["days_in_month"] = lastOfMonth.Day()
 
 	render.TemplatesRenderer(w, r, "admin-reservations-calender.page.tmpl", &models.TemplateData{
+		RoomsList: m.myroomsList(w),
 		StringMap: stringMap,
 		Data:      data,
 		IntMap:    intMap,
@@ -753,7 +813,7 @@ func (m *Repository) AdminPostReservationsCalender(w http.ResponseWriter, r *htt
 		}
 	}
 
-	for name, _ := range r.PostForm {
+	for name := range r.PostForm {
 		if strings.HasPrefix(name, "add_block_") {
 			URLPartition := strings.Split(name, "_")
 			roomID, _ := strconv.Atoi(URLPartition[2])

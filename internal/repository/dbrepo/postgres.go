@@ -3,9 +3,10 @@ package dbrepo
 import (
 	"context"
 	"errors"
+	"time"
+
 	"github.com/samiulru/bookings/internal/models"
 	"golang.org/x/crypto/bcrypt"
-	"time"
 )
 
 func (m *postgresDBRepo) AllUsers() bool {
@@ -236,7 +237,7 @@ func (m *postgresDBRepo) GetRoomByID(id int) (models.Room, error) {
 	cntx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 	var room models.Room
-	query := `select id, room_name, created_at, updated_at from rooms where id = $1`
+	query := `select id, room_name, created_at, updated_at, body, subtitle from rooms where id = $1`
 
 	row := m.DB.QueryRowContext(cntx, query, id)
 	err := row.Scan(
@@ -244,6 +245,8 @@ func (m *postgresDBRepo) GetRoomByID(id int) (models.Room, error) {
 		&room.RoomName,
 		&room.CreatedAt,
 		&room.UpdateAt,
+		&room.Body,
+		&room.Subtitle,
 	)
 
 	if err != nil {
@@ -432,7 +435,7 @@ func (m *postgresDBRepo) GetRestrictionsForRoomByDate(roomID int, start_date, en
 
 	var roomRestrictions []models.RoomRestriction
 
-		query := `select id, start_date, end_date, room_id, coalesce(reservation_id, 0), restriction_id, created_at, updated_at 
+	query := `select id, start_date, end_date, room_id, coalesce(reservation_id, 0), restriction_id, created_at, updated_at 
 		from room_restrictions where start_date <= $1 and end_date > $2 and room_id = $3`
 
 	rows, err := m.DB.QueryContext(cntx, query, end_date, start_date, roomID)
@@ -466,7 +469,7 @@ func (m *postgresDBRepo) GetRestrictionsForRoomByDate(roomID int, start_date, en
 	return roomRestrictions, nil
 }
 
-// InsertBlockForRoom inserts room restriction due to room-upgradation or maintainacne 
+// InsertBlockForRoom inserts room restriction due to room-upgradation or maintainacne
 func (m *postgresDBRepo) InsertBlockForRoom(roomID int, start_date, end_date time.Time) error {
 	cntx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
@@ -490,7 +493,7 @@ func (m *postgresDBRepo) InsertBlockForRoom(roomID int, start_date, end_date tim
 	return nil
 }
 
-// DeleteBlockForRoom deletes room restriction due to completed room-upgradation or maintainacne 
+// DeleteBlockForRoom deletes room restriction due to completed room-upgradation or maintainacne
 func (m *postgresDBRepo) DeleteBlockForRoom(id int) error {
 	cntx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()

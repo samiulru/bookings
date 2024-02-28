@@ -20,6 +20,9 @@ type User struct {
 type Room struct {
 	ID        int
 	RoomName  string
+	Subtitle  string
+	Body      string
+	Thumbnail string
 	CreatedAt time.Time
 	UpdateAt  time.Time
 }
