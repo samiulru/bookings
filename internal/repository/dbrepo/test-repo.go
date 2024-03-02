@@ -63,6 +63,10 @@ func (m *testDBRepo) SearchAvailabilityForAllRooms(start, end time.Time) ([]mode
 	return rooms, nil
 }
 
+// InsertRoom inserts room info to the database
+func (m *testDBRepo) InsertRoom(room models.Room) (int, error) {
+	return 0, nil
+}
 // GetRoomByID searchs room by id
 func (m *testDBRepo) GetRoomByID(id int) (models.Room, error) {
 	var room models.Room
@@ -71,7 +75,14 @@ func (m *testDBRepo) GetRoomByID(id int) (models.Room, error) {
 	}
 	return room, nil
 }
-
+// DeleteRoomByID deletes particular room from the database
+func (m *testDBRepo) DeleteRoomByID(id int) error {
+	return nil
+}
+// UpdateRoom updates particular room info in the database
+func (m *testDBRepo) UpdateRoom(room models.Room) error{
+	return nil
+}
 func (m *testDBRepo) GetUserByID(id int) (models.User, error) {
 	var u models.User
 	return u, nil
@@ -124,6 +135,10 @@ func (m *testDBRepo) UpdateProcessedForReservation(id, processed int) error {
 
 // AllRooms returns a slice of all room
 func (m *testDBRepo) AllRooms() ([]models.Room, error) {
+	return nil, nil
+}
+// AllRooms returns a slice of all room
+func (m *testDBRepo) AllRoomsDetails() ([]models.Room, error) {
 	return nil, nil
 }
 

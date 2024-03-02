@@ -3,11 +3,15 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/samiulru/bookings/internal/config"
 	"github.com/samiulru/bookings/internal/driver"
 	"github.com/samiulru/bookings/internal/forms"
@@ -48,8 +52,8 @@ func NewHandler(r *Repository) {
 	Repo = r
 }
 
-func (m *Repository) myroomsList(w http.ResponseWriter) map[string]interface{} {
-	rooms, err := m.DB.AllRooms()
+func (m *Repository) RoomsList(w http.ResponseWriter) map[string]interface{} {
+	rooms, err := m.DB.AllRoomsDetails()
 	if err != nil {
 		helpers.ServerError(w, err)
 	}
@@ -63,14 +67,15 @@ func (m *Repository) myroomsList(w http.ResponseWriter) map[string]interface{} {
 // Home handles the home page
 func (m *Repository) Home(w http.ResponseWriter, r *http.Request) {
 	_ = render.TemplatesRenderer(w, r, "home.page.tmpl", &models.TemplateData{
-		RoomsList: m.myroomsList(w),
+		RoomsDetails: m.RoomsList(w),
 	})
+
 }
 
 // About handles the about page
 func (m *Repository) About(w http.ResponseWriter, r *http.Request) {
 	_ = render.TemplatesRenderer(w, r, "about.page.tmpl", &models.TemplateData{
-		RoomsList: m.myroomsList(w),
+		RoomsDetails: m.RoomsList(w),
 	})
 }
 
@@ -102,26 +107,26 @@ func (m *Repository) RoomsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	room.Thumbnail = "/static/images/" + URIPartition[2] + "_" + strings.ReplaceAll(room.RoomName, " ", "") + ".png"
+	room.Thumbnail = "/static/images/rooms_thumbnail/" + room.IMGUUID
 	data := make(map[string]interface{})
 	data["rooms"] = room
 	_ = render.TemplatesRenderer(w, r, "rooms.page.tmpl", &models.TemplateData{
-		Data:      data,
-		RoomsList: m.myroomsList(w),
+		Data:         data,
+		RoomsDetails: m.RoomsList(w),
 	})
 }
 
 // Contact handles contact page
 func (m *Repository) Contact(w http.ResponseWriter, r *http.Request) {
 	_ = render.TemplatesRenderer(w, r, "contact.page.tmpl", &models.TemplateData{
-		RoomsList: m.myroomsList(w),
+		RoomsDetails: m.RoomsList(w),
 	})
 }
 
 // SearchAvailability handles search availability page for GET request
 func (m *Repository) SearchAvailability(w http.ResponseWriter, r *http.Request) {
 	_ = render.TemplatesRenderer(w, r, "search-availability.page.tmpl", &models.TemplateData{
-		RoomsList: m.myroomsList(w),
+		RoomsDetails: m.RoomsList(w),
 	})
 }
 
@@ -166,8 +171,8 @@ func (m *Repository) PostSearchAvailability(w http.ResponseWriter, r *http.Reque
 	m.App.Session.Put(r.Context(), "reservation", res)
 
 	_ = render.TemplatesRenderer(w, r, "choose-rooms.page.tmpl", &models.TemplateData{
-		RoomsList: m.myroomsList(w),
-		Data:      data,
+		RoomsDetails: m.RoomsList(w),
+		Data:         data,
 	})
 }
 
@@ -324,10 +329,10 @@ func (m *Repository) Reservation(w http.ResponseWriter, r *http.Request) {
 	data["reservation"] = res
 
 	render.TemplatesRenderer(w, r, "make-reservation.page.tmpl", &models.TemplateData{
-		RoomsList: m.myroomsList(w),
-		Form:      forms.New(nil),
-		Data:      data,
-		StringMap: strMap,
+		RoomsDetails: m.RoomsList(w),
+		Form:         forms.New(nil),
+		Data:         data,
+		StringMap:    strMap,
 	})
 }
 
@@ -364,10 +369,10 @@ func (m *Repository) PostReservation(w http.ResponseWriter, r *http.Request) {
 		strMap["room_name"] = res.Room.RoomName
 
 		render.TemplatesRenderer(w, r, "make-reservation.page.tmpl", &models.TemplateData{
-			RoomsList: m.myroomsList(w),
-			Form:      form,
-			Data:      data,
-			StringMap: strMap,
+			RoomsDetails: m.RoomsList(w),
+			Form:         form,
+			Data:         data,
+			StringMap:    strMap,
 		})
 		http.Error(w, "", http.StatusSeeOther)
 		return
@@ -435,8 +440,8 @@ func (m *Repository) ReservationSummary(w http.ResponseWriter, r *http.Request) 
 	data := make(map[string]interface{})
 	data["reservation"] = reservation
 	_ = render.TemplatesRenderer(w, r, "reservation-summary.page.tmpl", &models.TemplateData{
-		RoomsList: m.myroomsList(w),
-		Data:      data,
+		RoomsDetails: m.RoomsList(w),
+		Data:         data,
 	})
 }
 
@@ -447,8 +452,8 @@ func (m *Repository) ReservationSummary(w http.ResponseWriter, r *http.Request) 
 // UserLogin handles UserLogin page
 func (m *Repository) UserLogin(w http.ResponseWriter, r *http.Request) {
 	_ = render.TemplatesRenderer(w, r, "login.page.tmpl", &models.TemplateData{
-		RoomsList: m.myroomsList(w),
-		Form:      forms.New(nil),
+		RoomsDetails: m.RoomsList(w),
+		Form:         forms.New(nil),
 	})
 }
 
@@ -470,8 +475,8 @@ func (m *Repository) PostUserLogin(w http.ResponseWriter, r *http.Request) {
 
 	if !form.Valid() {
 		_ = render.TemplatesRenderer(w, r, "login.page.tmpl", &models.TemplateData{
-			RoomsList: m.myroomsList(w),
-			Form:      form,
+			RoomsDetails: m.RoomsList(w),
+			Form:         form,
 		})
 		http.Error(w, "", http.StatusSeeOther)
 		return
@@ -484,7 +489,7 @@ func (m *Repository) PostUserLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	m.App.Session.Put(r.Context(), "user_id", id)
-	m.App.Session.Put(r.Context(), "flash", "You are logged in successfully")
+	m.App.Session.Put(r.Context(), "authenticate_user", "Signed in successfully")
 	http.Redirect(w, r, "/admin/dashboard", http.StatusSeeOther)
 }
 
@@ -499,7 +504,7 @@ func (m *Repository) AdminLogout(w http.ResponseWriter, r *http.Request) {
 // AdminDashboard handles Admins dashboard
 func (m *Repository) AdminDashboard(w http.ResponseWriter, r *http.Request) {
 	render.TemplatesRenderer(w, r, "admin-dashboard.page.tmpl", &models.TemplateData{
-		RoomsList: m.myroomsList(w),
+		RoomsDetails: m.RoomsList(w),
 	})
 }
 
@@ -515,8 +520,8 @@ func (m *Repository) AdminNewReservations(w http.ResponseWriter, r *http.Request
 	data["reservations"] = reservations
 
 	render.TemplatesRenderer(w, r, "admin-new-reservations.page.tmpl", &models.TemplateData{
-		RoomsList: m.myroomsList(w),
-		Data:      data,
+		RoomsDetails: m.RoomsList(w),
+		Data:         data,
 	})
 }
 
@@ -532,8 +537,8 @@ func (m *Repository) AdminAllReservations(w http.ResponseWriter, r *http.Request
 	data["reservations"] = reservations
 
 	render.TemplatesRenderer(w, r, "admin-all-reservations.page.tmpl", &models.TemplateData{
-		RoomsList: m.myroomsList(w),
-		Data:      data,
+		RoomsDetails: m.RoomsList(w),
+		Data:         data,
 	})
 }
 
@@ -563,10 +568,10 @@ func (m *Repository) AdminShowReservation(w http.ResponseWriter, r *http.Request
 	data := make(map[string]interface{})
 	data["reservation"] = res
 	render.TemplatesRenderer(w, r, "admin-show-reservation.page.tmpl", &models.TemplateData{
-		RoomsList: m.myroomsList(w),
-		Data:      data,
-		StringMap: stringMap,
-		Form:      forms.New(nil),
+		RoomsDetails: m.RoomsList(w),
+		Data:         data,
+		StringMap:    stringMap,
+		Form:         forms.New(nil),
 	})
 }
 
@@ -609,10 +614,10 @@ func (m *Repository) AdminPostShowReservation(w http.ResponseWriter, r *http.Req
 		data["reservation"] = res
 
 		render.TemplatesRenderer(w, r, "admin-show-reservation.page.tmpl", &models.TemplateData{
-			RoomsList: m.myroomsList(w),
-			Form:      form,
-			Data:      data,
-			StringMap: stringMap,
+			RoomsDetails: m.RoomsList(w),
+			Form:         form,
+			Data:         data,
+			StringMap:    stringMap,
 		})
 		return
 	}
@@ -726,7 +731,7 @@ func (m *Repository) AdminReservationsCalender(w http.ResponseWriter, r *http.Re
 	firstOfMonth := time.Date(currentYear, currentMonth, 1, 0, 0, 0, 0, currentLocation)
 	lastOfMonth := firstOfMonth.AddDate(0, 1, -1)
 
-	rooms, err := m.DB.AllRooms()
+	rooms, err := m.DB.AllRoomsDetails()
 	if err != nil {
 		helpers.ServerError(w, err)
 	}
@@ -772,10 +777,10 @@ func (m *Repository) AdminReservationsCalender(w http.ResponseWriter, r *http.Re
 	intMap["days_in_month"] = lastOfMonth.Day()
 
 	render.TemplatesRenderer(w, r, "admin-reservations-calender.page.tmpl", &models.TemplateData{
-		RoomsList: m.myroomsList(w),
-		StringMap: stringMap,
-		Data:      data,
-		IntMap:    intMap,
+		RoomsDetails: m.RoomsList(w),
+		StringMap:    stringMap,
+		Data:         data,
+		IntMap:       intMap,
 	})
 }
 
@@ -792,7 +797,7 @@ func (m *Repository) AdminPostReservationsCalender(w http.ResponseWriter, r *htt
 
 	form := forms.New(r.PostForm)
 
-	rooms, err := m.DB.AllRooms()
+	rooms, err := m.DB.AllRoomsDetails()
 	if err != nil {
 		helpers.ServerError(w, err)
 		return
@@ -829,4 +834,203 @@ func (m *Repository) AdminPostReservationsCalender(w http.ResponseWriter, r *htt
 
 	m.App.Session.Put(r.Context(), "flash", "Changes Saved")
 	http.Redirect(w, r, fmt.Sprintf("/admin/reservations-calender?y=%d&m=%d", year, month), http.StatusSeeOther)
+}
+
+// AdminShowAllRooms shows a list of rooms from the database
+func (m *Repository) AdminShowAllRooms(w http.ResponseWriter, r *http.Request) {
+	rooms, err := m.DB.AllRoomsDetails()
+	if err != nil {
+		helpers.ServerError(w, err)
+		return
+	}
+	data := make(map[string]interface{})
+	data["rooms"] = rooms
+	_ = render.TemplatesRenderer(w, r, "admin-show-all-rooms.page.tmpl", &models.TemplateData{
+		Form: forms.New(nil),
+		Data: data,
+	})
+}
+
+// AdminDeleteRoom deletes perticular room by ID
+func (m *Repository) AdminDeleteRoom(w http.ResponseWriter, r *http.Request) {
+	URIPartition := strings.Split(r.RequestURI, "/")
+	roomID, err := strconv.Atoi(URIPartition[3])
+	if err != nil {
+		m.App.Session.Put(r.Context(), "error", "Unable to get room ID. Try again!")
+		http.Redirect(w, r, "/admin/rooms/show-all-room", http.StatusSeeOther)
+		return
+	}
+
+	room, err := m.DB.GetRoomByID(roomID)
+	if err != nil {
+		m.App.Session.Put(r.Context(), "error", "Can't Get room info! Try again")
+		http.Redirect(w, r, "/admin/rooms/show-all-room", http.StatusSeeOther)
+		return
+	}
+	err = m.DB.DeleteRoomByID(roomID)
+	if err != nil {
+		m.App.Session.Put(r.Context(), "error", "Can't Delete room! Try again")
+		http.Redirect(w, r, "/admin/rooms/show-all-room", http.StatusSeeOther)
+		return
+	}
+	os.Remove(filepath.Join("./static/images/rooms_thumbnail", room.IMGUUID))
+	m.App.Session.Put(r.Context(), "flash", "Room deleted successfully")
+	http.Redirect(w, r, "/admin/rooms/show-all-room", http.StatusSeeOther)
+}
+
+// AdminEditRoom renders pages for edit room info
+func (m *Repository) AdminEditRoom(w http.ResponseWriter, r *http.Request) {
+	URIPartition := strings.Split(r.RequestURI, "/")
+	roomID, err := strconv.Atoi(URIPartition[3])
+	if err != nil {
+		m.App.Session.Put(r.Context(), "error", "Unable to get room ID. Try again!")
+		http.Redirect(w, r, "/admin/rooms/show-all-room", http.StatusSeeOther)
+		return
+	}
+	room, err := m.DB.GetRoomByID(roomID)
+	if err != nil {
+		m.App.Session.Put(r.Context(), "error", "Unable to get Room Details. Try again!")
+		http.Redirect(w, r, "/admin/rooms/show-all-room", http.StatusSeeOther)
+		return
+	}
+
+	room.Thumbnail = "/static/images/rooms_thumbnail/" + room.IMGUUID
+	data := make(map[string]interface{})
+	data["room"] = room
+	_ = render.TemplatesRenderer(w, r, "room-details.page.tmpl", &models.TemplateData{
+		Form: forms.New(nil),
+		Data: data,
+	})
+}
+
+// AdminPostEditRoom updates perticular room info by roomID
+func (m *Repository) AdminPostEditRoom(w http.ResponseWriter, r *http.Request) {
+
+	URIPartition := strings.Split(r.RequestURI, "/")
+	roomID, err := strconv.Atoi(URIPartition[3])
+	if err != nil {
+		m.App.Session.Put(r.Context(), "error", "Unable to get room ID. Try again!")
+		http.Redirect(w, r, "/admin/rooms/show-all-room", http.StatusSeeOther)
+		return
+	}
+
+	err = r.ParseMultipartForm(10 << 20) // 10 MB max
+	if err != nil {
+		m.App.Session.Put(r.Context(), "error", "Unable to Parse form. Try again!")
+		http.Redirect(w, r, fmt.Sprintf("/admin/rooms/%d/edit", roomID), http.StatusSeeOther)
+		return
+	}
+
+	//Getting old room info from database
+	oldRoom, err := m.DB.GetRoomByID(roomID)
+	if err != nil {
+		m.App.Session.Put(r.Context(), "error", "Unable to find infomation from database. Try again!")
+		http.Redirect(w, r, "/admin/rooms/show-all-room", http.StatusSeeOther)
+		return
+	}
+
+	// Get the file from the form
+	file, header, _ := r.FormFile("img_file")
+
+	//Getting Room Informations
+	var room models.Room
+	room.ID = roomID
+	room.RoomName = r.Form.Get("room_name")
+	room.Subtitle = r.Form.Get("subtitle")
+	room.Body = r.Form.Get("body")
+	room.IMGUUID = oldRoom.IMGUUID
+
+	if file != nil && header != nil {
+		defer file.Close()
+		nameSplit := strings.Split(header.Filename, ".")
+		room.IMGUUID = strings.ReplaceAll(room.RoomName, " ", "") + "_" + uuid.New().String() + "." + nameSplit[1]
+
+		// Create a new file in the server's filesystem
+		dst, err := os.Create(filepath.Join("./static/images/rooms_thumbnail", room.IMGUUID))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		defer dst.Close()
+
+		// Copy the uploaded file to the destination file
+		_, err = io.Copy(dst, file)
+		if err != nil {
+			m.App.Session.Put(r.Context(), "error", "Unable Insert room info.Please try again!")
+			http.Redirect(w, r, fmt.Sprintf("/admin/rooms/%d/edit", roomID), http.StatusSeeOther)
+			return
+		}
+
+		//Removing Old image
+		os.Remove(filepath.Join("./static/images/rooms_thumbnail", oldRoom.IMGUUID))
+	}
+	err = m.DB.UpdateRoom(room)
+	if err == nil {
+		m.App.Session.Put(r.Context(), "flash", "Room Information Updated")
+		http.Redirect(w, r, "/admin/rooms/show-all-room", http.StatusSeeOther)
+	} else {
+		m.App.Session.Put(r.Context(), "error", "Unable update room info.Please try again!")
+		http.Redirect(w, r, fmt.Sprintf("/admin/rooms/%d/edit", roomID), http.StatusSeeOther)
+		return
+	}
+
+}
+
+// AdminAddNewRoom renders add new room page
+func (m *Repository) AdminAddNewRoom(w http.ResponseWriter, r *http.Request) {
+	_ = render.TemplatesRenderer(w, r, "add-new-room.page.tmpl", &models.TemplateData{
+		Form: forms.New(nil),
+		Data: nil,
+	})
+}
+func (m *Repository) AdminPostAddNewRoom(w http.ResponseWriter, r *http.Request) {
+
+	err := r.ParseMultipartForm(10 << 20) // 10 MB max
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Get the file from the form
+	file, header, err := r.FormFile("img_file")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	defer file.Close()
+
+	//Getting Room Informations
+	var room models.Room
+	room.RoomName = r.Form.Get("room_name")
+	room.Subtitle = r.Form.Get("subtitle")
+	room.Body = r.Form.Get("body")
+
+	nameSplit := strings.Split(header.Filename, ".")
+	room.IMGUUID = strings.ReplaceAll(room.RoomName, " ", "") + "_" + uuid.New().String() + "." + nameSplit[1]
+	
+	// Create a new file in the server's filesystem
+	dst, err := os.Create(filepath.Join("./static/images/rooms_thumbnail", room.IMGUUID))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer dst.Close()
+
+	// Copy the uploaded file to the destination file
+	_, err = io.Copy(dst, file)
+	if err != nil {
+		m.App.Session.Put(r.Context(), "error", "Unable Insert room info.Please try again!")
+		http.Redirect(w, r, "/admin/rooms/add-new-room", http.StatusSeeOther)
+		return
+	}
+	roomID, err := m.DB.InsertRoom(room)
+	if err != nil {
+		helpers.ServerError(w, err)
+		return
+	}
+	room.ID = roomID
+
+	m.App.Session.Put(r.Context(), "flash", "Room info inserted successfully")
+	http.Redirect(w, r, "/admin/rooms/show-all-room", http.StatusSeeOther)
+
 }

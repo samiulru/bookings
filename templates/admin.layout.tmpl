@@ -59,15 +59,29 @@
                 </a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" data-bs-toggle="collapse" href="#ui-basic" aria-expanded="false" aria-controls="ui-basic">
+                <a class="nav-link" data-bs-toggle="collapse" href="#res-aria" aria-expanded="false" aria-controls="res-aria">
                   <i class="ti-palette menu-icon"></i>
                   <span class="menu-title">Reservation History</span>
                   <i class="menu-arrow"></i>
                 </a>
-                <div class="collapse" id="ui-basic">
+                <div class="collapse" id="res-aria">
                   <ul class="nav flex-column sub-menu">
                     <li class="nav-item"> <a class="nav-link" href="/admin/new-reservations">New Reservations</a></li>
                     <li class="nav-item"> <a class="nav-link" href="/admin/all-reservations">All Reservations</a></li>
+                  </ul>
+                </div>
+              </li>
+
+              <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="collapse" href="#rooms-aria" aria-expanded="false" aria-controls="rooms-aria">
+                  <i class="ti-palette menu-icon"></i>
+                  <span class="menu-title">Rooms</span>
+                  <i class="menu-arrow"></i>
+                </a>
+                <div class="collapse" id="rooms-aria">
+                  <ul class="nav flex-column sub-menu">
+                    <li class="nav-item"> <a class="nav-link" href="/admin/rooms/show-all-room">Show All Rooms</a></li>
+                    <li class="nav-item"> <a class="nav-link" href="/admin/rooms/add-new-room">Add New Room</a></li>
                   </ul>
                 </div>
               </li>
@@ -77,6 +91,7 @@
                   <span class="menu-title">Reservations Calender</span>
                 </a>
               </li>
+              
             </ul>
           </nav>
           <!-- partial -->
@@ -144,6 +159,23 @@
             confirmButtonText: confirmationButtonText
           })
         }
+        function notify_swal(msg, icon){
+            const swal = Swal.mixin({
+                toast: true,
+                position: "top-end",
+                showConfirmButton: false,
+                timer: 2000,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.onmouseenter = Swal.stopTimer;
+                    toast.onmouseleave = Swal.resumeTimer;
+                }
+                });
+                swal.fire({
+                icon: icon,
+                html: msg
+                });
+        }
         {{with .Error}}
             notify("{{.}}", "error")
         {{end}}
@@ -153,7 +185,9 @@
         {{with .Warning}}
             notify("{{.}}", "warning")
         {{end}}
-
+        {{with .Authenticate_User}}
+            notify_swal("{{.}}", "success")
+        {{end}}
       </script>
       <!-- End custom js for this page-->
 

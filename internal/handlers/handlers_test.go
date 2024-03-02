@@ -322,7 +322,7 @@ func TestRepository_ReservationSummary(t *testing.T) {
 			ID:       1,
 		},
 		CreatedAt: time.Time{},
-		UpdateAt:  time.Time{},
+		UpdatedAt:  time.Time{},
 	}
 	req, _ = http.NewRequest("GET", "/reservation-summary", nil)
 	req = req.WithContext(getCtx(req))

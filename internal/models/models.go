@@ -13,7 +13,7 @@ type User struct {
 	Password    string
 	AccessLevel int
 	CreatedAt   time.Time
-	UpdateAt    time.Time
+	UpdatedAt    time.Time
 }
 
 // Room defines the room model
@@ -23,8 +23,9 @@ type Room struct {
 	Subtitle  string
 	Body      string
 	Thumbnail string
+	IMGUUID string
 	CreatedAt time.Time
-	UpdateAt  time.Time
+	UpdatedAt  time.Time
 }
 
 // Restriction defines the restriction model
@@ -32,7 +33,7 @@ type Restriction struct {
 	ID              int
 	RestrictionName string
 	CreatedAt       time.Time
-	UpdateAt        time.Time
+	UpdatedAt        time.Time
 }
 
 // Reservation defines the reservations model
@@ -47,7 +48,7 @@ type Reservation struct {
 	RoomID       int
 	Room         Room
 	CreatedAt    time.Time
-	UpdateAt     time.Time
+	UpdatedAt     time.Time
 	Processed    int
 }
 
@@ -60,7 +61,7 @@ type RoomRestriction struct {
 	ReservationID int
 	RestrictionId int
 	CreatedAt     time.Time
-	UpdateAt      time.Time
+	UpdatedAt      time.Time
 	Room          Room
 	Reservation   Reservation
 	Restriction   Restriction

@@ -1,0 +1,3 @@
+drop_column("rooms", "subtitle")
+drop_column("rooms", "body")
+drop_column("rooms", "img_uuid")

@@ -38,7 +38,7 @@
                             Rooms
                             </a>
                             <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                {{$rooms := index .RoomsList "roomsList"}}
+                                {{$rooms := index .RoomsDetails "roomsList"}}
                                 {{range $rooms}}
                                     <a class="dropdown-item" href="/rooms/{{.ID}}">{{.RoomName}}</a>
                                 {{end}}
@@ -104,6 +104,23 @@
               text: msg,
             })
         }
+        function notify_swal(msg, icon){
+            const swal = Swal.mixin({
+                toast: true,
+                position: "top-end",
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.onmouseenter = Swal.stopTimer;
+                    toast.onmouseleave = Swal.resumeTimer;
+                }
+                });
+                swal.fire({
+                icon: icon,
+                title: msg
+                });
+        }
         {{with .Error}}
             notify("{{.}}", "error")
         {{end}}
@@ -112,6 +129,9 @@
         {{end}}
         {{with .Warning}}
             notify("{{.}}", "warning")
+        {{end}}
+        {{with .Authenticate_User}}
+            notify_swal("{{.}}", "success")
         {{end}}
       </script>
 

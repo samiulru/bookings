@@ -1,2 +1,0 @@
-add_column("rooms", "subtitle", "text", {default: ""})
-add_column("rooms", "body", "text", {default: ""})

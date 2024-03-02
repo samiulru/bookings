@@ -8,11 +8,12 @@ type TemplateData struct {
 	IntMap          map[string]int
 	FloatMap        map[string]float32
 	Data            map[string]interface{}
-	RoomsList       map[string]interface{}
+	RoomsDetails       map[string]interface{}
 	CSRFToken       string
 	Flash           string
 	Warning         string
 	Error           string
+	Authenticate_User           string
 	Form            *forms.Form
 	IsAuthenticated int
 }

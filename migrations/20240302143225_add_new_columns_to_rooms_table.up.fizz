@@ -1,0 +1,3 @@
+add_column("rooms", "subtitle", "text", {default: ""})
+add_column("rooms", "body", "text", {default: ""})
+add_column("rooms", "img_uuid", "text", {default: ""})

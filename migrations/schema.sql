@@ -148,9 +148,9 @@ CREATE TABLE public.rooms (
     room_name character varying(255) DEFAULT ''::character varying NOT NULL,
     created_at timestamp without time zone NOT NULL,
     updated_at timestamp without time zone NOT NULL,
-    content_h1 character varying(255) DEFAULT ''::character varying NOT NULL,
-    content_h6 character varying(255) DEFAULT ''::character varying NOT NULL,
-    content_main character varying(255) DEFAULT ''::character varying NOT NULL
+    subtitle text DEFAULT ''::text NOT NULL,
+    body text DEFAULT ''::text NOT NULL,
+    img_uuid text DEFAULT ''::text NOT NULL
 );
 
 

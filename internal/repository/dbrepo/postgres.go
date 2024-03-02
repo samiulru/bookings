@@ -144,7 +144,7 @@ func (m *postgresDBRepo) GetUserByID(id int) (models.User, error) {
 		&u.Password,
 		&u.AccessLevel,
 		&u.CreatedAt,
-		&u.UpdateAt,
+		&u.UpdatedAt,
 	)
 
 	if err != nil {
@@ -200,7 +200,32 @@ func (m *postgresDBRepo) Authenticate(email, testPassword string) (int, string, 
 	return id, hashedPassword, nil
 }
 
-// AllRooms returns a slice of all room
+// InsertRoom inserts room info to the database
+func (m *postgresDBRepo) InsertRoom(room models.Room) (int, error) {
+	cntx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	var newID int
+	query := `insert into rooms (room_name, body, subtitle, img_uuid, created_at, updated_at)
+			values ($1, $2, $3, $4, $5, $6) returning id`
+
+	err := m.DB.QueryRowContext(cntx, query,
+		room.RoomName,
+		room.Body,
+		room.Subtitle,
+		room.IMGUUID,
+		time.Now(),
+		time.Now(),
+	).Scan(&newID)
+
+	if err != nil {
+		return 0, err
+	}
+
+	return newID, nil
+}
+
+// AllRooms returns a slice of all room ????deprecated...............................................................
 func (m *postgresDBRepo) AllRooms() ([]models.Room, error) {
 	cntx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
@@ -219,7 +244,43 @@ func (m *postgresDBRepo) AllRooms() ([]models.Room, error) {
 			&room.ID,
 			&room.RoomName,
 			&room.CreatedAt,
-			&room.UpdateAt,
+			&room.UpdatedAt,
+		)
+		if err != nil {
+			return rooms, err
+		}
+		rooms = append(rooms, room)
+	}
+	if err = rows.Err(); err != nil {
+		return rooms, err
+	}
+	return rooms, nil
+}
+
+// .........................................................................
+// AllRoomsDetails returns a slice of all room details
+func (m *postgresDBRepo) AllRoomsDetails() ([]models.Room, error) {
+	cntx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	var rooms []models.Room
+	query := `select id, room_name, body, subtitle, img_uuid, created_at, updated_at from rooms order by room_name`
+
+	rows, err := m.DB.QueryContext(cntx, query)
+	if err != nil {
+		return rooms, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var room models.Room
+		err = rows.Scan(
+			&room.ID,
+			&room.RoomName,
+			&room.Body,
+			&room.Subtitle,
+			&room.IMGUUID,
+			&room.CreatedAt,
+			&room.UpdatedAt,
 		)
 		if err != nil {
 			return rooms, err
@@ -237,22 +298,54 @@ func (m *postgresDBRepo) GetRoomByID(id int) (models.Room, error) {
 	cntx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 	var room models.Room
-	query := `select id, room_name, created_at, updated_at, body, subtitle from rooms where id = $1`
+	query := `select id, room_name, body, subtitle, img_uuid, created_at, updated_at from rooms where id = $1`
 
 	row := m.DB.QueryRowContext(cntx, query, id)
 	err := row.Scan(
 		&room.ID,
 		&room.RoomName,
-		&room.CreatedAt,
-		&room.UpdateAt,
 		&room.Body,
 		&room.Subtitle,
+		&room.IMGUUID,
+		&room.CreatedAt,
+		&room.UpdatedAt,
 	)
 
 	if err != nil {
 		return room, err
 	}
 	return room, nil
+}
+
+// DeleteRoomByID deletes particular room from the database
+func (m *postgresDBRepo) DeleteRoomByID(id int) error {
+	cntx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	query := `delete from rooms where id = $1`
+
+	_, err := m.DB.ExecContext(cntx, query, id)
+
+	return err
+}
+
+// UpdateRoom updates particular room info in the database
+func (m *postgresDBRepo) UpdateRoom(room models.Room) error {
+	cntx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	query := `update rooms
+				set room_name = $1, body = $2, subtitle = $3, img_uuid = $4, updated_at = $5
+				where id = $6`
+
+	_, err := m.DB.ExecContext(cntx, query,
+		room.RoomName,
+		room.Body,
+		room.Subtitle,
+		room.IMGUUID,
+		time.Now(),
+		room.ID,
+	)
+
+	return err
 }
 
 // ViewALlReservations returns a slice of all reservations
@@ -284,7 +377,7 @@ func (m *postgresDBRepo) ViewALlReservations() ([]models.Reservation, error) {
 			&i.EndDate,
 			&i.RoomID,
 			&i.CreatedAt,
-			&i.UpdateAt,
+			&i.UpdatedAt,
 			&i.Processed,
 			&i.Room.ID,
 			&i.Room.RoomName,
@@ -332,7 +425,7 @@ func (m *postgresDBRepo) ViewNewReservations() ([]models.Reservation, error) {
 			&i.EndDate,
 			&i.RoomID,
 			&i.CreatedAt,
-			&i.UpdateAt,
+			&i.UpdatedAt,
 			&i.Processed,
 			&i.Room.ID,
 			&i.Room.RoomName,
@@ -374,7 +467,7 @@ func (m *postgresDBRepo) GetReservationByID(id int) (models.Reservation, error) 
 		&reservation.EndDate,
 		&reservation.RoomID,
 		&reservation.CreatedAt,
-		&reservation.UpdateAt,
+		&reservation.UpdatedAt,
 		&reservation.Processed,
 		&reservation.Room.ID,
 		&reservation.Room.RoomName,
@@ -454,7 +547,7 @@ func (m *postgresDBRepo) GetRestrictionsForRoomByDate(roomID int, start_date, en
 			&r.ReservationID,
 			&r.RestrictionId,
 			&r.CreatedAt,
-			&r.UpdateAt,
+			&r.UpdatedAt,
 		)
 
 		if err != nil {

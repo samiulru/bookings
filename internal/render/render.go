@@ -57,6 +57,7 @@ func AddDefaultData(data *models.TemplateData, r *http.Request) *models.Template
 	data.Flash = app.Session.PopString(r.Context(), "flash")
 	data.Error = app.Session.PopString(r.Context(), "error")
 	data.Warning = app.Session.PopString(r.Context(), "warning")
+	data.Authenticate_User = app.Session.PopString(r.Context(), "authenticate_user")
 	data.CSRFToken = nosurf.Token(r)
 
 	if app.Session.Exists(r.Context(), "user_id") {
